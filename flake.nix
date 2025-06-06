@@ -25,7 +25,7 @@
         }:
         {
 	  devShells.default = pkgs.mkShell {
-	    buildInputs = with pkgs.python3Packages; [ cyclonedds-python ];
+	    buildInputs = with pkgs; [ python3Packages.cyclonedds-python eigen ]; # TODO: gazebo
 	  };
         };
     };
