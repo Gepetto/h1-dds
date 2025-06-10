@@ -18,15 +18,24 @@
       imports = [ inputs.gepetto.flakeModule ];
       perSystem =
         {
-          lib,
           pkgs,
-          self',
           ...
         }:
         {
-	  devShells.default = pkgs.mkShell {
-	    buildInputs = with pkgs; [ python3Packages.cyclonedds-python eigen ]; # TODO: gazebo
-	  };
+          devShells.default = pkgs.mkShell {
+            buildInputs = with pkgs; [
+              glfw
+              glm
+              mujoco
+              yaml-cpp
+              (python3.withPackages (
+                ps: with ps; [
+                  cyclonedds-python
+                  eigen
+                ]
+              ))
+            ]; # TODO: gazebo
+          };
         };
     };
 }
