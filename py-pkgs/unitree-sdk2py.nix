@@ -1,7 +1,8 @@
 {
   lib,
   buildPythonPackage,
-  fetchPypi,
+  fetchFromGitHub,
+
   setuptools,
   cyclonedds-python,
   numpy,
@@ -9,16 +10,22 @@
   python,
 }:
 
-buildPythonPackage rec {
+buildPythonPackage {
   pname = "unitree-sdk2py";
-  version = "1.0.1";
+  version = "1.0.1-unstable-2025-03-05";
   pyproject = true;
 
-  src = fetchPypi {
-    pname = "unitree_sdk2py";
-    inherit version;
-    hash = "sha256-TIAT9HYE5fPz0mnj0f/4K2ywgnk1PrrzAP7p0Se8E4s=";
+  src = fetchFromGitHub {
+    owner = "unitreerobotics";
+    repo = "unitree_sdk2_python";
+    # no tags in repo...
+    rev = "986f39d54182badc1aa3a0c282bcd898fba4ef20";
+    hash = "sha256-0n5v9B92Sr2MnGSH91ucXHZWOAzypER0hNZAAspLVvM=";
   };
+
+  postPatch = ''
+    touch unitree_sdk2py/comm/__init__.py
+  '';
 
   build-system = [
     setuptools
@@ -35,7 +42,10 @@ buildPythonPackage rec {
       --replace-fail ", b2" ""
   '';
 
-  pythonImportsCheck = [ "unitree_sdk2py" ];
+  pythonImportsCheck = [
+    "unitree_sdk2py"
+    "unitree_sdk2py.comm.motion_switcher.motion_switcher_client"
+  ];
 
   meta = {
     description = "Unitree robot sdk version 2 for python";
