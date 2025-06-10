@@ -7,7 +7,6 @@
   cyclonedds-python,
   numpy,
   opencv-python,
-  python,
 }:
 
 buildPythonPackage {
@@ -24,6 +23,8 @@ buildPythonPackage {
   };
 
   postPatch = ''
+    substituteInPlace unitree_sdk2py/__init__.py \
+      --replace-fail ", b2" ""
     touch unitree_sdk2py/comm/__init__.py
   '';
 
@@ -36,11 +37,6 @@ buildPythonPackage {
     numpy
     opencv-python
   ];
-
-  postFixup = ''
-    substituteInPlace $out/${python.sitePackages}/unitree_sdk2py/__init__.py \
-      --replace-fail ", b2" ""
-  '';
 
   pythonImportsCheck = [
     "unitree_sdk2py"
