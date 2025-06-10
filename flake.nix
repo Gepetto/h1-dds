@@ -20,7 +20,7 @@
         {
           gepetto-pkgs.overlays = [
             (final: prev: {
-              cyclonedds = prev.cyclonedds.overrideAttrs (super: rec {
+              cyclonedds = prev.cyclonedds.overrideAttrs (_super: rec {
                 version = "0.10.2";
                 src = final.fetchFromGitHub {
                   owner = "eclipse-cyclonedds";
