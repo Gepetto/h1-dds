@@ -15,10 +15,42 @@
     inputs:
     inputs.flake-parts.lib.mkFlake { inherit inputs; } {
       systems = import inputs.systems;
-      imports = [ inputs.gepetto.flakeModule ];
+      imports = [
+        inputs.gepetto.flakeModule
+        {
+          gepetto-pkgs.overlays = [
+            (final: prev: {
+              cyclonedds = prev.cyclonedds.overrideAttrs (_super: rec {
+                version = "0.10.2";
+                src = final.fetchFromGitHub {
+                  owner = "eclipse-cyclonedds";
+                  repo = "cyclonedds";
+                  tag = version;
+                  hash = "sha256-xr9H9n+gyFMgEMHn59T6ELYVZJ1m8laG0d99SE9k268=";
+                };
+              });
+              pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+                (python-final: python-prev: {
+                  cyclonedds-python = python-prev.cyclonedds-python.overrideAttrs {
+                    inherit (final.cyclonedds) version;
+                    src = final.fetchFromGitHub {
+                      owner = "eclipse-cyclonedds";
+                      repo = "cyclonedds-python";
+                      tag = final.cyclonedds.version;
+                      hash = "sha256-EnvNWIYDviMPANanUqI7Uk8lQBjXcN9DVb9OZlAelrM=";
+                    };
+                  };
+                  unitree-sdk2py = python-final.callPackage ./py-pkgs/unitree-sdk2py.nix { };
+                })
+              ];
+            })
+          ];
+        }
+      ];
       perSystem =
         {
           pkgs,
+          self',
           ...
         }:
         {
@@ -28,13 +60,14 @@
               glm
               mujoco
               yaml-cpp
-              (python3.withPackages (
-                ps: with ps; [
-                  cyclonedds-python
-                  eigen
-                ]
-              ))
+              self'.packages.python
             ]; # TODO: gazebo
+          };
+          packages = {
+            inherit (pkgs.python3Packages) unitree-sdk2py;
+            python = pkgs.python3.withPackages (_: [
+              self'.packages.unitree-sdk2py
+            ]);
           };
         };
     };
