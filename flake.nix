@@ -20,6 +20,8 @@
         {
           gepetto-pkgs.overlays = [
             (final: prev: {
+              unitree-sdk2 = final.callPackage ./pkgs/unitree-sdk2.nix { };
+              unitree-mujoco-simulate = final.callPackage ./pkgs/unitree-mujoco-simulate.nix { };
               cyclonedds = prev.cyclonedds.overrideAttrs (_super: rec {
                 version = "0.10.2";
                 src = final.fetchFromGitHub {
@@ -64,6 +66,7 @@
             ]; # TODO: gazebo
           };
           packages = {
+            inherit (pkgs) unitree-sdk2 unitree-mujoco-simulate;
             inherit (pkgs.python3Packages) unitree-sdk2py;
             python = pkgs.python3.withPackages (_: [
               self'.packages.unitree-sdk2py
