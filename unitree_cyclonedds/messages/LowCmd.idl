@@ -1,0 +1,11 @@
+module unitree_hg
+{
+  struct LowCmd
+  {
+    uint8 mode_pr;
+    uint8 mode_machine;
+    MotorCmd motor_cmd[35];
+    unsigned long reserve[4];
+    unsigned long crc;
+  };
+};

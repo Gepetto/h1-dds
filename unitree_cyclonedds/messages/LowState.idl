@@ -1,0 +1,15 @@
+module unitree_hg
+{
+  struct LowState
+  {
+    unsigned long version[2];
+    uint8 mode_pr;
+    uint8 mode_machine;
+    unsigned long tick;
+    IMUState imu_state;
+    MotorState motor_state[35];
+    uint8 wireless_remote[40];
+    unsigned long reserve[4];
+    unsigned long crc;
+  };
+};
