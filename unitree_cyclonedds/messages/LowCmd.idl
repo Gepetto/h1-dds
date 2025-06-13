@@ -1,6 +1,17 @@
-module unitree_hg
+module lowlevel
 {
-  struct LowCmd
+  struct MotorCmd
+  {
+    uint8 mode;
+    float q;
+    float dq;
+    float tau;
+    float kp;
+    float kd;
+    unsigned long reserve;
+  };
+
+  struct Cmd
   {
     uint8 mode_pr;
     uint8 mode_machine;

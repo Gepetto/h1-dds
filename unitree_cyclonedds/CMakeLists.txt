@@ -14,7 +14,7 @@ endif()
 # that will supply a library target related the the given idl file.
 # In short, it takes the idl file, generates the source files with
 # the proper data types and compiles them into a library.
-idlc_generate(TARGET Messages FILES "messages/*.idl" WARNINGS no-implicit-extensibility)
+idlc_generate(TARGET Messages FILES "messages/LowCmd.idl" "messages/LowState.idl" WARNINGS no-implicit-extensibility)
 
 # Both executables have only one related source file.
 add_executable(UnitreeSubscriber subscriber.c)

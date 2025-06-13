@@ -1,15 +1,37 @@
-module unitree_hg
+module lowlevel
 {
-  struct LowState
+  struct TMotorState
+  {
+    uint8 mode;
+    float q;
+    float dq;
+    float ddq;
+    float tau_est;
+    short temperature[2];
+    float vol;
+    unsigned long sensor[2];
+    unsigned long motorstate;
+    unsigned long reserve[4];
+  };
+
+  struct IMUState
+  {
+    float quaternion[4];
+    float gyroscope[3];
+    float accelerometer[3];
+    float rpy[3];
+    short temperature;
+  };
+
+  struct state
   {
     unsigned long version[2];
     uint8 mode_pr;
     uint8 mode_machine;
     unsigned long tick;
     IMUState imu_state;
-    MotorState motor_state[35];
+    TMotorState motor_state[35];
     uint8 wireless_remote[40];
-    unsigned long reserve[4];
     unsigned long crc;
   };
 };
