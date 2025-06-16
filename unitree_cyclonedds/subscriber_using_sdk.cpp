@@ -1,12 +1,14 @@
-#include "messages/LowCmd.h"
-#include "messages/LowState.h"
-#include "dds/dds.h"
+#include "LowCmd.hpp"
+#include "LowState.hpp"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 // DDS
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <unitree/robot/channel/channel_subscriber.hpp>
+
+using namespace unitree::common;
+using namespace unitree::robot;
 
 uint32_t crc32_core(uint32_t *ptr, uint32_t len)
 {
@@ -40,23 +42,23 @@ uint32_t crc32_core(uint32_t *ptr, uint32_t len)
   return CRC32;
 }
 
-void cmd_handler(const void *message)
+void CmdHandler(const void *msg)
 {
-  std::cout << "Received command message" << std::endl;
+  const lowlevel::Cmd *cmd = (const lowlevel::Cmd *)msg;
+
+  std::cout << "mode_machine:" << cmd->mode_machine() << ", crc:" << cmd->crc() << std::endl;
 }
 
 int main(int argc, char **argv)
 {
-  unitree::robot::ChannelFactory::Instance()->Init(1, "lo");
+  ChannelFactory::Instance()->Init(1, "lo");
 
-  unitree::robot::ChannelPublisherPtr<lowlevel_state> publisher;
-  publisher.reset(new unitree::robot::ChannelPublisher<lowlevel_state>("rt/lowstate"));
+  ChannelPublisherPtr<lowlevel::state> publisher = ChannelPublisherPtr<lowlevel::state>(new ChannelPublisher<lowlevel::state>("rt/lowstate"));
   publisher->InitChannel();
 
-  unitree::robot::ChannelSubscriberPtr<lowlevel_Cmd> subscriber;
-  subscriber.reset(new unitree::robot::ChannelSubscriber<lowlevel_Cmd>("rt/lowcmd"));
+  ChannelSubscriberPtr<lowlevel::Cmd> subscriber = ChannelSubscriberPtr<lowlevel::Cmd>(new ChannelSubscriber<lowlevel::Cmd>("rt/lowcmd"));
   subscriber->InitChannel(
-      &cmd_handler, 1);
+      std::bind(CmdHandler, std::placeholders::_1), 1);
 
   return EXIT_SUCCESS;
 }

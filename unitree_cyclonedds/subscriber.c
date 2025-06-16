@@ -1,5 +1,5 @@
-#include "messages/LowCmd.h"
-#include "messages/LowState.h"
+#include "LowCmd.h"
+#include "LowState.h"
 #include "dds/dds.h"
 #include <stdio.h>
 #include <string.h>
