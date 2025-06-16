@@ -26,24 +26,24 @@ public:
     unitree::robot::ChannelFactory::Instance()->Init(0, networkInterface);
     std::cout << "Initialize channel factory." << std::endl;
 
-    msc.reset(new MotionSwitcherClient());
-    std::cout << "feur!!" << std::endl;
-    msc->SetTimeout(5.0F);
-    msc->Init();
+    // msc.reset(new MotionSwitcherClient());
+    // std::cout << "feur!!" << std::endl;
+    // msc->SetTimeout(5.0F);
+    // msc->Init();
 
 
     /*Shut down  motion control-related service*/
-    while(queryMotionStatus())
-    {
-        std::cout << "Try to deactivate the motion control-related service." << std::endl;
-        int32_t ret = msc->ReleaseMode();
-        if (ret == 0) {
-            std::cout << "ReleaseMode succeeded." << std::endl;
-        } else {
-            std::cout << "ReleaseMode failed. Error code: " << ret << std::endl;
-        }
-        sleep(5);
-    }
+    // while(queryMotionStatus())
+    // {
+    //     std::cout << "Try to deactivate the motion control-related service." << std::endl;
+    //     int32_t ret = msc->ReleaseMode();
+    //     if (ret == 0) {
+    //         std::cout << "ReleaseMode succeeded." << std::endl;
+    //     } else {
+    //         std::cout << "ReleaseMode failed. Error code: " << ret << std::endl;
+    //     }
+    //     sleep(5);
+    // }
 
     lowcmd_publisher_.reset(
         new unitree::robot::ChannelPublisher<unitree_go::msg::dds_::LowCmd_>(

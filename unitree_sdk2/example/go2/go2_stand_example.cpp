@@ -225,6 +225,8 @@ void Custom::LowCmdWrite()
     {
         std::cout<<"The example is done! "<<std::endl;
         std::cout<<std::endl;
+        std::cout<<"Dump of entire low_state: "<<std::endl;
+        std::cout<<low_state
         done = true;
     }
 
@@ -315,7 +317,7 @@ int main(int argc, const char** argv)
             << "Press Enter to continue..." << std::endl;
     std::cin.ignore();
 
-    ChannelFactory::Instance()->Init(0, argv[1]);
+    ChannelFactory::Instance()->Init(1, argv[1]);
 
     Custom custom;
     custom.Init();

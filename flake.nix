@@ -62,6 +62,7 @@
               glm
               mujoco
               yaml-cpp
+              ghidra
               self'.packages.python
             ]; # TODO: gazebo
           };

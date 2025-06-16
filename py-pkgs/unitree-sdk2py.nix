@@ -30,6 +30,11 @@ buildPythonPackage rec {
     opencv-python
   ];
 
+  postPatch = ''
+    mkdir -p unitree_sdk2py/comm
+    touch unitree_sdk2py/comm/__init__.py
+  '';
+
   postFixup = ''
     substituteInPlace $out/${python.sitePackages}/unitree_sdk2py/__init__.py \
       --replace-fail ", b2" ""

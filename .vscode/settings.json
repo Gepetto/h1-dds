@@ -1,3 +1,10 @@
 {
-    "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix"
+    "nixEnvSelector.nixFile": "${workspaceFolder}/flake.nix",
+    "files.associations": {
+        "*.txt": "plaintext",
+        "CMakeLists.txt": "cmake",
+        "functional": "cpp",
+        "iostream": "cpp"
+    },
+    "cmake.sourceDirectory": "/work/h1-dds/unitree_sdk2/example/b2"
 }

@@ -201,7 +201,7 @@ int main(int argc, const char** argv)
         exit(-1);
     }
 
-    ChannelFactory::Instance()->Init(0, argv[1]);
+    ChannelFactory::Instance()->Init(1, argv[1]);
 
     Custom custom;
     custom.Init();
