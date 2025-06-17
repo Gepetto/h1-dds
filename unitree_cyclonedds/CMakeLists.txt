@@ -13,6 +13,7 @@ find_package(unitree_sdk2 REQUIRED)
 if (NOT TARGET CycloneDDS-CXX::ddscxx)
   find_package(CycloneDDS-CXX REQUIRED)
 endif()
+
 if (NOT TARGET CycloneDDS::ddsc)
   find_package(CycloneDDS REQUIRED)
 endif()
@@ -31,4 +32,5 @@ add_executable(sdkful subscriber_using_sdk.cpp)
 # Both executables need to be linked to the idl data type library and
 # the ddsc API library.
 target_link_libraries(sdkless MessagesC unitree_sdk2 CycloneDDS::ddsc)
-target_link_libraries(sdkful MessagesCXX unitree_sdk2 CycloneDDS-CXX::ddscxx)
+# don't link cycloneddscxx, unitree_sdk2 bundles its own
+target_link_libraries(sdkful MessagesCXX unitree_sdk2 )
