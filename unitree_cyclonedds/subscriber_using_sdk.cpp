@@ -1,11 +1,12 @@
-#include "LowCmd.hpp"
-#include "LowState.hpp"
 #include <stdio.h>
+#include <cstdlib>
 #include <string.h>
 #include <stdlib.h>
-// DDS
+
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <unitree/robot/channel/channel_subscriber.hpp>
+#include <unitree/idl/hg/LowCmd_.hpp>
+#include <unitree/idl/hg/LowState_.hpp>
 
 using namespace unitree::common;
 using namespace unitree::robot;
@@ -44,7 +45,7 @@ uint32_t crc32_core(uint32_t *ptr, uint32_t len)
 
 void CmdHandler(const void *msg)
 {
-  const lowlevel::Cmd *cmd = (const lowlevel::Cmd *)msg;
+  const unitree_hg::msg::dds_::LowCmd_ *cmd = (const unitree_hg::msg::dds_::LowCmd_ *)msg;
 
   std::cout << "mode_machine:" << cmd->mode_machine() << ", crc:" << cmd->crc() << std::endl;
 }
@@ -53,12 +54,19 @@ int main(int argc, char **argv)
 {
   ChannelFactory::Instance()->Init(1, "lo");
 
-  ChannelPublisherPtr<lowlevel::state> publisher = ChannelPublisherPtr<lowlevel::state>(new ChannelPublisher<lowlevel::state>("rt/lowstate"));
+  ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_> publisher = ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_>(new ChannelPublisher<unitree_hg::msg::dds_::LowState_>("rt/lowstate"));
   publisher->InitChannel();
 
-  ChannelSubscriberPtr<lowlevel::Cmd> subscriber = ChannelSubscriberPtr<lowlevel::Cmd>(new ChannelSubscriber<lowlevel::Cmd>("rt/lowcmd"));
+  ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_> subscriber = ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_>(new ChannelSubscriber<unitree_hg::msg::dds_::LowCmd_>("rt/lowcmd"));
   subscriber->InitChannel(
       std::bind(CmdHandler, std::placeholders::_1), 1);
+
+  while (true)
+  {
+    unitree_hg::msg::dds_::LowState_ lowstate{};
+    publisher->Write(lowstate);
+    usleep(2000);
+  }
 
   return EXIT_SUCCESS;
 }
