@@ -64,6 +64,7 @@ int main(int argc, char **argv)
   while (true)
   {
     unitree_hg::msg::dds_::LowState_ lowstate{};
+    lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
     publisher->Write(lowstate);
     usleep(2000);
   }
