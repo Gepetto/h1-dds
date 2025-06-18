@@ -83,7 +83,7 @@ add_library(gz-unitree
 target_include_directories(gz-unitree PRIVATE
   include
 )
-target_link_libraries(gz-unitree PRIVATE
+target_link_libraries(gz-unitree
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER} unitree_sdk2
 )
 
@@ -96,23 +96,6 @@ install(
   DESTINATION lib/${PROJECT_NAME}
 )
 
-install(
-  DIRECTORY
-  config/
-  DESTINATION share/${PROJECT_NAME}/config
-)
-
-install(
-  DIRECTORY
-  models/
-  DESTINATION share/${PROJECT_NAME}/models
-)
-
-install(
-  DIRECTORY
-  worlds/
-  DESTINATION share/${PROJECT_NAME}/worlds
-)
 
 # --------------------------------------------------------------------------- #
 # Register as an ament package if ament_cmake is available.
