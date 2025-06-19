@@ -46,3 +46,8 @@ GZ_ADD_PLUGIN(
     UnitreePlugin::ISystemPostUpdate,
     UnitreePlugin::ISystemPreUpdate,
     UnitreePlugin::ISystemConfigure)
+
+GZ_ADD_PLUGIN_ALIAS(
+    UnitreePlugin,
+    "gz::sim::systems::UnitreePlugin"
+)

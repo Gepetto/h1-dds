@@ -1,109 +1,46 @@
-cmake_minimum_required(VERSION 3.10.2 FATAL_ERROR)
-project(gz-unitree LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.8)
+project(gz-unitree)
 
-# --------------------------------------------------------------------------- #
-# If ament_cmake is found build as an ament package, otherwise ignore.
-# This is so the system may be built for Gazebo only, if ROS is not available.
-find_package(ament_cmake QUIET)
-if(${ament_cmake_FOUND})
-  message("Building ${PROJECT_NAME} as an `ament_cmake` project.")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
 endif()
 
-# --------------------------------------------------------------------------- #
-# Compile as C++14.
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# --------------------------------------------------------------------------- #
-# Find gz-sim and dependencies.
+find_package(gz-cmake3 REQUIRED)
+find_package(gz-plugin2 REQUIRED COMPONENTS register)
+set(GZ_PLUGIN_VER ${gz-plugin2_VERSION_MAJOR})
+find_package(gz-common5 REQUIRED COMPONENTS profiler)
+set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
+find_package(gz-sim8 REQUIRED)
+set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 
-if("$ENV{GZ_VERSION}" STREQUAL "harmonic" OR NOT DEFINED "ENV{GZ_VERSION}")
-  # Harmonic (default)
-  find_package(gz-cmake3 REQUIRED)
-  set(GZ_CMAKE_VER ${gz-cmake3_VERSION_MAJOR})
 
-  gz_find_package(gz-common5 REQUIRED)
-  set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
-
-  gz_find_package(gz-rendering8 REQUIRED)
-  set(GZ_RENDERING_VER ${gz-rendering8_VERSION_MAJOR})
-
-  gz_find_package(gz-sim8 REQUIRED)
-  set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
-
-  message(STATUS "Compiling against Gazebo Harmonic")
-elseif("$ENV{GZ_VERSION}" STREQUAL "ionic")
-  # Ionic
-  find_package(gz-cmake4 REQUIRED)
-  set(GZ_CMAKE_VER ${gz-cmake4_VERSION_MAJOR})
-
-  gz_find_package(gz-common6 REQUIRED)
-  set(GZ_COMMON_VER ${gz-common6_VERSION_MAJOR})
-
-  gz_find_package(gz-rendering9 REQUIRED)
-  set(GZ_RENDERING_VER ${gz-rendering9_VERSION_MAJOR})
-
-  gz_find_package(gz-sim9 REQUIRED)
-  set(GZ_SIM_VER ${gz-sim9_VERSION_MAJOR})
-
-  message(STATUS "Compiling against Gazebo Ionic")
-elseif("$ENV{GZ_VERSION}" STREQUAL "garden")
-  # Garden
-  find_package(gz-cmake3 REQUIRED)
-  set(GZ_CMAKE_VER ${gz-cmake3_VERSION_MAJOR})
-
-  gz_find_package(gz-common5 REQUIRED)
-  set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
-
-  gz_find_package(gz-rendering7 REQUIRED)
-  set(GZ_RENDERING_VER ${gz-rendering7_VERSION_MAJOR})
-
-  gz_find_package(gz-sim7 REQUIRED)
-  set(GZ_SIM_VER ${gz-sim7_VERSION_MAJOR})
-
-  message(STATUS "Compiling against Gazebo Garden")
-else()
-  message(FATAL_ERROR "Unsupported GZ_VERSION: $ENV{GZ_VERSION}")
-endif()
-
-# --------------------------------------------------------------------------- #
 list(APPEND CMAKE_PREFIX_PATH "/opt/unitree_robotics/lib/cmake")
 find_package(unitree_sdk2 REQUIRED)
 
-# pkg_check_modules(GST REQUIRED gstreamer-1.0 gstreamer-app-1.0)
-
-
-# --------------------------------------------------------------------------- #
-# Build plugin.
 
 add_library(gz-unitree
-    SHARED
-    system.cc
-)
-target_include_directories(gz-unitree PRIVATE
-  include
-)
-target_link_libraries(gz-unitree
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER} unitree_sdk2
+  SHARED
+  system.cc
 )
 
-# --------------------------------------------------------------------------- #
-# Install.
+target_include_directories(
+  gz-unitree PRIVATE include
+)
+
+target_link_libraries(gz-unitree PRIVATE
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+  unitree_sdk2
+)
+
 
 install(
-  TARGETS
-  gz-unitree
+  TARGETS gz-unitree
   DESTINATION lib/${PROJECT_NAME}
 )
 
+# ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in")
+# ament_environment_hooks("${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.sh.in")
 
-# --------------------------------------------------------------------------- #
-# Register as an ament package if ament_cmake is available.
-if(${ament_cmake_FOUND})
-  ament_environment_hooks(
-    "${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.dsv.in")
-  ament_environment_hooks(
-    "${CMAKE_CURRENT_SOURCE_DIR}/hooks/${PROJECT_NAME}.sh.in")
 
-  ament_package()
-endif()
+# ament_package()
