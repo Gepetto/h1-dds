@@ -14,6 +14,10 @@ set(GZ_COMMON_VER ${gz-common5_VERSION_MAJOR})
 find_package(gz-sim8 REQUIRED)
 set(GZ_SIM_VER ${gz-sim8_VERSION_MAJOR})
 
+# if (NOT TARGET CycloneDDS::ddsc)
+#   find_package(CycloneDDS REQUIRED)
+# endif()
+
 
 list(APPEND CMAKE_PREFIX_PATH "/opt/unitree_robotics/lib/cmake")
 find_package(unitree_sdk2 REQUIRED)
@@ -28,9 +32,10 @@ target_include_directories(
   gz-unitree PRIVATE include
 )
 
-target_link_libraries(gz-unitree PRIVATE
-  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
+target_link_libraries(gz-unitree
   unitree_sdk2
+  # CycloneDDS::ddsc
+  gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
 )
 
 

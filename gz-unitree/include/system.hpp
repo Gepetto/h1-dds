@@ -1,4 +1,12 @@
 #include <gz/sim/System.hh>
+#include "../data.hpp"
+#include <unitree/robot/channel/channel_publisher.hpp>
+#include <unitree/robot/channel/channel_subscriber.hpp>
+#include <unitree/idl/hg/LowCmd_.hpp>
+#include <unitree/idl/hg/LowState_.hpp>
+
+using namespace unitree::common;
+using namespace unitree::robot;
 
 namespace gz_unitree
 {
@@ -9,6 +17,16 @@ namespace gz_unitree
         public gz::sim::ISystemPreUpdate,
         public gz::sim::ISystemConfigure
     {
+    private:
+        // This is a private method that will be used to handle commands.
+        void CmdHandler(const void *msg);
+
+    private:
+        // Buffers
+        DataBuffer<MotorState> motor_state_buffer;
+        DataBuffer<MotorCommand> motor_command_buffer;
+        DataBuffer<ImuState> imu_state_buffer;
+
     public:
         UnitreePlugin();
 
