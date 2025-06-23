@@ -52,6 +52,7 @@ float GetMotorKd(MotorType type)
 
 UnitreePlugin::UnitreePlugin()
 {
+    this->state_sent = false;
 }
 
 UnitreePlugin::~UnitreePlugin()
@@ -79,10 +80,14 @@ void UnitreePlugin::CmdHandler(const void *msg)
 void UnitreePlugin::PostUpdate(const gz::sim::UpdateInfo &_info,
                                const gz::sim::EntityComponentManager &_ecm)
 {
-    unitree_hg::msg::dds_::LowState_ lowstate{};
-    // lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
-    lowstate.crc() = 3;
-    this->state_publisher.Write(lowstate);
+    if (!this->state_sent)
+    {
+        gzmsg << header << "Sending initial state" << std::endl;
+        this->state_sent = true;
+        unitree_hg::msg::dds_::LowState_ lowstate{};
+        lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
+        this->state_publisher->Write(lowstate);
+    }
 }
 
 void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
@@ -99,8 +104,8 @@ void UnitreePlugin::Configure(const gz::sim::Entity &_entity,
 
     gzmsg << header << "Created instance on DDS domain 1 with network interface 'lo'" << std::endl;
 
-    this.state_publisher = ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_>(new ChannelPublisher<unitree_hg::msg::dds_::LowState_>("rt/lowstate"));
-    this.state_publisher->InitChannel();
+    this->state_publisher = ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_>(new ChannelPublisher<unitree_hg::msg::dds_::LowState_>("rt/lowstate"));
+    this->state_publisher->InitChannel();
 
     gzmsg << header << "Created publisher on channel 'rt/lowstate'" << std::endl;
 

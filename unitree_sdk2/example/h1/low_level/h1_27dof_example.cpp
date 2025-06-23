@@ -206,6 +206,9 @@ class H1Example {
                                 &H1Example::LowCommandWriter, this);
     control_thread_ptr_ = CreateRecurrentThreadEx(
         "control", UT_CPU_ID_NONE, 2000, &H1Example::Control, this);
+
+    std::cout << "H1Example initialized with network interface: "
+              << networkInterface << std::endl;
   }
 
   void ReportRPY() {
@@ -219,6 +222,7 @@ class H1Example {
   }
 
   void LowStateHandler(const void *message) {
+    std::cout << "Received low state message" << std::endl;
     unitree_hg::msg::dds_::LowState_ low_state =
         *(const unitree_hg::msg::dds_::LowState_ *)message;
 

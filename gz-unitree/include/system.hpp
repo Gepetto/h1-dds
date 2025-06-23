@@ -30,6 +30,8 @@ namespace gz_unitree
         // Publisher
         ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_> state_publisher;
 
+        bool state_sent;
+
     public:
         UnitreePlugin();
 

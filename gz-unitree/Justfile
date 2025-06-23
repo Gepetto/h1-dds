@@ -6,12 +6,22 @@ install:
     sudo cp libgz-unitree.so /usr/local/lib/gz-unitree/
 
 sim:
+    just multicast lo
     just install
-    GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim h1/urdf/h1.sdf -v  | rg --fixed-strings '[Unitree]'
+    GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim h1/urdf/h1.sdf  -v | rg --fixed-strings '[Unitree]'
 
 test:
     #!/usr/bin/env bash
-    cd ../unitree_sdk2_vendored/build
+    just multicast lo
+    cd ../unitree_sdk2
+    mkdir -p build
+    cd build
     cmake ..
     make h1_27dof_example
-    sudo ../../bin/h1_27dof_example lo
+    echo Starting h1_27dof_example...
+    sudo bin/h1_27dof_example lo
+    echo Done
+
+multicast iface="lo":
+    sudo route add -net 224.0.0.0 netmask 240.0.0.0 dev {{iface}} || echo "Multicast route already exists"
+    sudo ifconfig {{iface}} multicast
