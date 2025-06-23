@@ -7,4 +7,9 @@ install:
 
 sim:
     just install
-    GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim h1/urdf/h1.sdf
+    GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim h1/urdf/h1.sdf -v  | rg --fixed-strings '[Unitree]'
+
+test:
+    #!/usr/bin/env bash
+    cd ../unitree_sdk2_vendored/build
+    sudo bin/h1_27dof_example lo

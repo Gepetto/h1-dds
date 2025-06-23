@@ -27,6 +27,9 @@ namespace gz_unitree
         DataBuffer<MotorCommand> motor_command_buffer;
         DataBuffer<ImuState> imu_state_buffer;
 
+        // Publisher
+        ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_> state_publisher;
+
     public:
         UnitreePlugin();
 

@@ -14,6 +14,8 @@
 #include <unitree/idl/hg/LowCmd_.hpp>
 #include <unitree/idl/hg/LowState_.hpp>
 
+#define header "[Unitree] "
+
 using namespace gz_unitree;
 using namespace unitree::common;
 using namespace unitree::robot;
@@ -58,7 +60,7 @@ UnitreePlugin::~UnitreePlugin()
 
 void UnitreePlugin::CmdHandler(const void *msg)
 {
-    gzmsg << "UnitreePlugin::CmdHandler" << std::endl;
+    gzmsg << header << "got a cmd message" << std::endl;
     unitree_hg::msg::dds_::LowCmd_ _cmd = *(const unitree_hg::msg::dds_::LowCmd_ *)msg;
 
     MotorCommand motor_command_tmp;
@@ -77,13 +79,15 @@ void UnitreePlugin::CmdHandler(const void *msg)
 void UnitreePlugin::PostUpdate(const gz::sim::UpdateInfo &_info,
                                const gz::sim::EntityComponentManager &_ecm)
 {
-    gzmsg << "UnitreePlugin::PostUpdate" << std::endl;
+    unitree_hg::msg::dds_::LowState_ lowstate{};
+    // lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
+    lowstate.crc() = 3;
+    this->state_publisher.Write(lowstate);
 }
 
 void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
                               gz::sim::EntityComponentManager &_ecm)
 {
-    gzmsg << "UnitreePlugin::PreUpdate" << std::endl;
 }
 
 void UnitreePlugin::Configure(const gz::sim::Entity &_entity,
@@ -93,12 +97,18 @@ void UnitreePlugin::Configure(const gz::sim::Entity &_entity,
 {
     ChannelFactory::Instance()->Init(1, "lo");
 
-    ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_> publisher = ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_>(new ChannelPublisher<unitree_hg::msg::dds_::LowState_>("rt/lowstate"));
-    publisher->InitChannel();
+    gzmsg << header << "Created instance on DDS domain 1 with network interface 'lo'" << std::endl;
+
+    this.state_publisher = ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_>(new ChannelPublisher<unitree_hg::msg::dds_::LowState_>("rt/lowstate"));
+    this.state_publisher->InitChannel();
+
+    gzmsg << header << "Created publisher on channel 'rt/lowstate'" << std::endl;
 
     ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_> subscriber = ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_>(new ChannelSubscriber<unitree_hg::msg::dds_::LowCmd_>("rt/lowcmd"));
     subscriber->InitChannel(
         std::bind(&UnitreePlugin::CmdHandler, this, std::placeholders::_1), 1);
+
+    gzmsg << header << "Created subscriber on channel 'rt/lowcmd'" << std::endl;
 }
 
 // Include a line in your source file for each interface implemented.
