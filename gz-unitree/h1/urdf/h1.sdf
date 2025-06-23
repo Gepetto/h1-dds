@@ -1,9 +1,5 @@
 <sdf version='1.11'>
   <model name='h1_description'>
-    <plugin
-      filename="gz-unitree"
-      name="gz::sim::systems::UnitreePlugin">
-    </plugin>
     <link name='pelvis'>
       <inertial>
         <pose>0.0097494027875498351 0.001674253124267095 0.17464395412469139 0 0 0</pose>
