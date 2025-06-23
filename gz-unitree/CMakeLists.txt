@@ -29,6 +29,7 @@ target_include_directories(
 
 target_link_libraries(gz-unitree
   unitree_sdk2
+  Threads::Threads
   gz-sim${GZ_SIM_VER}::gz-sim${GZ_SIM_VER}
 )
 

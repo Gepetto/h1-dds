@@ -1,5 +1,6 @@
 #include "include/system.hpp"
 #include <gz/plugin/Register.hh>
+#include <gz/sim/Model.hh>
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -53,6 +54,7 @@ float GetMotorKd(MotorType type)
 UnitreePlugin::UnitreePlugin()
 {
     this->state_sent = false;
+    this->joints_logged = false;
 }
 
 UnitreePlugin::~UnitreePlugin()
@@ -77,17 +79,22 @@ void UnitreePlugin::CmdHandler(const void *msg)
     this->motor_command_buffer.SetData(motor_command_tmp);
 }
 
-void UnitreePlugin::PostUpdate(const gz::sim::UpdateInfo &_info,
-                               const gz::sim::EntityComponentManager &_ecm)
+void UnitreePlugin::LowStateWriter()
 {
-    if (!this->state_sent)
+
+    while (true)
     {
-        gzmsg << header << "Sending initial state" << std::endl;
-        this->state_sent = true;
+
         unitree_hg::msg::dds_::LowState_ lowstate{};
         lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
         this->state_publisher->Write(lowstate);
+        usleep(2000);
     }
+}
+
+void UnitreePlugin::PostUpdate(const gz::sim::UpdateInfo &_info,
+                               const gz::sim::EntityComponentManager &ecm)
+{
 }
 
 void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
@@ -95,9 +102,9 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
 {
 }
 
-void UnitreePlugin::Configure(const gz::sim::Entity &_entity,
+void UnitreePlugin::Configure(const gz::sim::Entity &id,
                               const std::shared_ptr<const sdf::Element> &_sdf,
-                              gz::sim::EntityComponentManager &_ecm,
+                              gz::sim::EntityComponentManager &ecm,
                               gz::sim::EventManager &_eventMgr)
 {
     ChannelFactory::Instance()->Init(1, "lo");
@@ -107,6 +114,10 @@ void UnitreePlugin::Configure(const gz::sim::Entity &_entity,
     this->state_publisher = ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_>(new ChannelPublisher<unitree_hg::msg::dds_::LowState_>("rt/lowstate"));
     this->state_publisher->InitChannel();
 
+    this->publisher_thread =
+        CreateRecurrentThreadEx("low_state_writer", UT_CPU_ID_NONE, 2000,
+                                &UnitreePlugin::LowStateWriter, this);
+
     gzmsg << header << "Created publisher on channel 'rt/lowstate'" << std::endl;
 
     ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_> subscriber = ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_>(new ChannelSubscriber<unitree_hg::msg::dds_::LowCmd_>("rt/lowcmd"));
@@ -114,6 +125,10 @@ void UnitreePlugin::Configure(const gz::sim::Entity &_entity,
         std::bind(&UnitreePlugin::CmdHandler, this, std::placeholders::_1), 1);
 
     gzmsg << header << "Created subscriber on channel 'rt/lowcmd'" << std::endl;
+
+    this->joints_logged = true;
+    gz::sim::Model model = gz::sim::Model(id);
+    gzmsg << header << "Joint: " << model.JointByName(ecm, "left_hip_yaw_joint") << std::endl;
 }
 
 // Include a line in your source file for each interface implemented.

@@ -18,8 +18,8 @@ namespace gz_unitree
         public gz::sim::ISystemConfigure
     {
     private:
-        // This is a private method that will be used to handle commands.
         void CmdHandler(const void *msg);
+        void LowStateWriter();
 
     private:
         // Buffers
@@ -29,8 +29,10 @@ namespace gz_unitree
 
         // Publisher
         ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_> state_publisher;
+        ThreadPtr publisher_thread;
 
         bool state_sent;
+        bool joints_logged;
 
     public:
         UnitreePlugin();
@@ -47,9 +49,9 @@ namespace gz_unitree
                         const gz::sim::EntityComponentManager &_ecm) override;
 
     public:
-        void Configure(const gz::sim::Entity &_id,
+        void Configure(const gz::sim::Entity &id,
                        const std::shared_ptr<const sdf::Element> &_sdf,
-                       gz::sim::EntityComponentManager &_ecm,
+                       gz::sim::EntityComponentManager &ecm,
                        gz::sim::EventManager &_eventMgr) override;
     };
 }

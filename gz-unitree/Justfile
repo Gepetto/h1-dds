@@ -2,13 +2,11 @@ install:
     #!/usr/bin/env bash
     cd build
     cmake ..
-    make
-    sudo cp libgz-unitree.so /usr/local/lib/gz-unitree/
+    make && sudo cp libgz-unitree.so /usr/local/lib/gz-unitree/
 
 sim:
     just multicast lo
-    just install
-    GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim h1/urdf/h1.sdf  -v | rg --fixed-strings '[Unitree]'
+    just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim h1/urdf/h1.sdf  -v | rg --fixed-strings '[Unitree]'
 
 test:
     #!/usr/bin/env bash

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <array>
 #include <cmath>
 #include <memory>
 #include <mutex>
@@ -39,23 +40,23 @@ private:
 
 struct ImuState
 {
-    std::array<float, 3> rpy = {};
-    std::array<float, 3> omega = {};
+    std::array<float, 3> rpy;
+    std::array<float, 3> omega;
 };
 
 struct MotorCommand
 {
-    std::array<float, H1_NUM_MOTOR> q_target = {};
-    std::array<float, H1_NUM_MOTOR> dq_target = {};
-    std::array<float, H1_NUM_MOTOR> kp = {};
-    std::array<float, H1_NUM_MOTOR> kd = {};
-    std::array<float, H1_NUM_MOTOR> tau_ff = {};
+    std::array<float, H1_NUM_MOTOR> q_target;
+    std::array<float, H1_NUM_MOTOR> dq_target;
+    std::array<float, H1_NUM_MOTOR> kp;
+    std::array<float, H1_NUM_MOTOR> kd;
+    std::array<float, H1_NUM_MOTOR> tau_ff;
 };
 
 struct MotorState
 {
-    std::array<float, H1_NUM_MOTOR> q = {};
-    std::array<float, H1_NUM_MOTOR> dq = {};
+    std::array<float, H1_NUM_MOTOR> q{};
+    std::array<float, H1_NUM_MOTOR> dq{};
 };
 
 enum MotorType

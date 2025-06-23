@@ -268,6 +268,7 @@ class H1Example {
     const std::shared_ptr<const MotorCommand> mc =
         motor_command_buffer_.GetData();
     if (mc) {
+      std::cout << "Writing low command message" << std::endl;
       for (size_t i = 0; i < H1_NUM_MOTOR; i++) {
         dds_low_command.motor_cmd().at(i).mode() = 1;  // 1:Enable, 0:Disable
         dds_low_command.motor_cmd().at(i).tau() = mc->tau_ff.at(i);
@@ -280,6 +281,8 @@ class H1Example {
       dds_low_command.crc() = Crc32Core((uint32_t *)&dds_low_command,
                                         (sizeof(dds_low_command) >> 2) - 1);
       lowcmd_publisher_->Write(dds_low_command);
+    } else {
+      std::cout << "No motor command data available to write." << std::endl;
     }
   }
 
@@ -290,6 +293,7 @@ class H1Example {
     const std::shared_ptr<const MotorState> ms = motor_state_buffer_.GetData();
 
     if (ms) {
+      std::cout << "State in buffer. Controlling robot at time: " << time_ << std::endl;
       time_ += control_dt_;
       if (time_ < duration_ * 1) {
         // [Stage 1]: set robot to zero posture
@@ -352,6 +356,7 @@ class H1Example {
         motor_command_tmp.q_target.at(RightAnkleB) = R_B_des;
       }
 
+      std::cout << "Setting data for motors at time: " << time_ << std::endl;
       motor_command_buffer_.SetData(motor_command_tmp);
     }
   }
