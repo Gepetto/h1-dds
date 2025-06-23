@@ -12,4 +12,6 @@ sim:
 test:
     #!/usr/bin/env bash
     cd ../unitree_sdk2_vendored/build
-    sudo bin/h1_27dof_example lo
+    cmake ..
+    make h1_27dof_example
+    sudo ../../bin/h1_27dof_example lo

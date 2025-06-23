@@ -3,7 +3,6 @@
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
-#include <cstdlib>
 
 // DDS
 #include <unitree/robot/channel/channel_publisher.hpp>
@@ -220,7 +219,6 @@ class H1Example {
   }
 
   void LowStateHandler(const void *message) {
-    std::cout << "got low state uwu" << std::endl;
     unitree_hg::msg::dds_::LowState_ low_state =
         *(const unitree_hg::msg::dds_::LowState_ *)message;
 
@@ -277,8 +275,6 @@ class H1Example {
 
       dds_low_command.crc() = Crc32Core((uint32_t *)&dds_low_command,
                                         (sizeof(dds_low_command) >> 2) - 1);
-
-      std::cout << "writing lowcmd owo" << std::endl;
       lowcmd_publisher_->Write(dds_low_command);
     }
   }
@@ -362,7 +358,6 @@ int main(int argc, char const *argv[]) {
     std::cout << "Usage: h1_27dof_example network_interface_name" << std::endl;
     exit(0);
   }
-
   std::string networkInterface = argv[1];
   H1Example custom(networkInterface);
 

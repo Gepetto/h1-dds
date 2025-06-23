@@ -8,14 +8,18 @@ target_link_libraries(g1_arm5_sdk_dds_example unitree_sdk2)
 add_executable(g1_arm7_sdk_dds_example high_level/g1_arm7_sdk_dds_example.cpp)
 target_link_libraries(g1_arm7_sdk_dds_example unitree_sdk2)
 
+add_executable(g1_arm_action_example high_level/g1_arm_action_example.cpp)
+target_link_libraries(g1_arm_action_example unitree_sdk2)
+
 add_executable(g1_ankle_swing_example low_level/g1_ankle_swing_example.cpp)
 target_link_libraries(g1_ankle_swing_example unitree_sdk2)
 
 add_executable(g1_audio_client_example audio/g1_audio_client_example.cpp)
 target_link_libraries(g1_audio_client_example unitree_sdk2)
 
-# add_executable(g1_dex3_example dex3/g1_dex3_example.cpp)
-# target_link_libraries(g1_dex3_example unitree_sdk2)
+add_executable(g1_dex3_example dex3/g1_dex3_example.cpp)
+target_link_libraries(g1_dex3_example unitree_sdk2)
+
 
 find_package(yaml-cpp QUIET)
 if(yaml-cpp_FOUND)

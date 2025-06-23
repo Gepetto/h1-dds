@@ -23,14 +23,12 @@ static const std::string kTopicLowState = "rt/lowstate";
 class HumanoidExample {
 public:
   HumanoidExample(const std::string &networkInterface = "") {
-    unitree::robot::ChannelFactory::Instance()->Init(1, networkInterface);
+    unitree::robot::ChannelFactory::Instance()->Init(0, networkInterface);
     std::cout << "Initialize channel factory." << std::endl;
 
     msc.reset(new MotionSwitcherClient());
-    std::cout << "feur!!" << std::endl;
     msc->SetTimeout(5.0F);
     msc->Init();
-
 
     /*Shut down  motion control-related service*/
     while(queryMotionStatus())
@@ -104,8 +102,6 @@ public:
   void LowStateHandler(const void *message) {
     unitree_go::msg::dds_::LowState_ low_state =
         *(unitree_go::msg::dds_::LowState_ *)message;
-
-    std::cout << "got low state uwu" << std::endl;
 
     RecordMotorState(low_state);
     RecordBaseState(low_state);
