@@ -27,6 +27,10 @@ namespace gz_unitree
         DataBuffer<MotorCommand> motor_command_buffer;
         DataBuffer<ImuState> imu_state_buffer;
 
+        // ECM
+        // gz::sim::EntityComponentManager& ecm;
+        gz::sim::Entity model_id;
+
         // Publisher
         ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_> state_publisher;
         ThreadPtr publisher_thread;

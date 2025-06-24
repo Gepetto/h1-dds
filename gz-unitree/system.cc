@@ -83,15 +83,6 @@ void UnitreePlugin::CmdHandler(const void *msg)
 
 void UnitreePlugin::LowStateWriter()
 {
-
-    while (true)
-    {
-
-        unitree_hg::msg::dds_::LowState_ lowstate{};
-        lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
-        this->state_publisher->Write(lowstate);
-        usleep(2000);
-    }
 }
 
 void UnitreePlugin::PostUpdate(const gz::sim::UpdateInfo &_info,
@@ -100,8 +91,45 @@ void UnitreePlugin::PostUpdate(const gz::sim::UpdateInfo &_info,
 }
 
 void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
-                              gz::sim::EntityComponentManager &_ecm)
+                              gz::sim::EntityComponentManager &ecm)
 {
+    unitree_hg::msg::dds_::LowState_ lowstate{};
+    gz::sim::Model model = gz::sim::Model(this->model_id);
+
+    uint motor_state_index = 0;
+    for (std::string joint_name : H1_2JointNames)
+    {
+        gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
+        gz::math::v7::Pose3d pose = joint.Pose(ecm).value();
+        std::optional<std::vector<double>> position = joint.Position(ecm);
+
+        gzmsg << header << joint_name << ": " << pose << std::endl;
+        if (!position.has_value())
+        {
+            gzerr << header << "Joint " << joint_name << " position not available." << std::endl;
+            continue;
+        }
+        else
+        {
+            std::vector<double> position_value = position.value();
+            // gzmsg << header << joint_name << " position: " << position.value()[0] << std::endl;
+            if (position_value.size() < 1)
+            {
+                gzerr << header << "Joint " << joint_name << " position components count is less than 1." << std::endl;
+            }
+            else
+            {
+                gzmsg << header << joint_name << " pos: " << position_value.at(0) << std::endl;
+            }
+        }
+
+        // lowstate.motor_state().at(motor_state_index).q() =
+
+        motor_state_index++;
+    }
+
+    lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
+    this->state_publisher->Write(lowstate);
 }
 
 void UnitreePlugin::Configure(const gz::sim::Entity &id,
@@ -109,7 +137,9 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
                               gz::sim::EntityComponentManager &ecm,
                               gz::sim::EventManager &_eventMgr)
 {
+    this->model_id = id;
     ChannelFactory::Instance()->Init(1, "lo");
+    // this->ecm = *&ecm;
 
     gzmsg << header << "Created instance on DDS domain 1 with network interface 'lo'" << std::endl;
 
@@ -129,13 +159,6 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
     gzmsg << header << "Created subscriber on channel 'rt/lowcmd'" << std::endl;
 
     this->joints_logged = true;
-    gz::sim::Model model = gz::sim::Model(id);
-    for (std::string joint_name : H1_2JointNames)
-    {
-        gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
-        gz::math::v7::Pose3d pose = joint.Pose(ecm).value();
-        gzmsg << header << joint_name << ": " << pose << std::endl;
-    }
 }
 
 // Include a line in your source file for each interface implemented.
