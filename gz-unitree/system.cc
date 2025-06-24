@@ -104,26 +104,28 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
         std::optional<std::vector<double>> position = joint.Position(ecm);
 
         gzmsg << header << joint_name << ": " << pose << std::endl;
-        if (!position.has_value())
+
+        if (joint_name == "torso_joint" || joint_name == "left_elbow_joint" || joint_name == "right_elbow_joint")
         {
-            gzerr << header << "Joint " << joint_name << " position not available." << std::endl;
+            // TODO these dont have the full 3 angles, need to figure out what they should contain
             continue;
         }
-        else
+
+        float angle;
+        if (joint_name.find("pitch_joint") != std::string::npos)
         {
-            std::vector<double> position_value = position.value();
-            // gzmsg << header << joint_name << " position: " << position.value()[0] << std::endl;
-            if (position_value.size() < 1)
-            {
-                gzerr << header << "Joint " << joint_name << " position components count is less than 1." << std::endl;
-            }
-            else
-            {
-                gzmsg << header << joint_name << " pos: " << position_value.at(0) << std::endl;
-            }
+            angle = pose.Pitch();
+        }
+        if (joint_name.find("roll_joint") != std::string::npos)
+        {
+            angle = pose.Roll();
+        }
+        if (joint_name.find("yaw_joint") != std::string::npos)
+        {
+            angle = pose.Yaw();
         }
 
-        // lowstate.motor_state().at(motor_state_index).q() =
+        lowstate.motor_state().at(motor_state_index).q() = angle;
 
         motor_state_index++;
     }

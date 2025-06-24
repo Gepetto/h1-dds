@@ -239,6 +239,9 @@ class H1Example {
       ms_tmp.q.at(i) = low_state.motor_state()[i].q();
       ms_tmp.dq.at(i) = low_state.motor_state()[i].dq();
 
+      std::cout << "Motor " << i << ": q = " << ms_tmp.q.at(i)
+                << ", dq = " << ms_tmp.dq.at(i) << std::endl;
+
       if (low_state.motor_state()[i].motorstate())
         std::cout << "[ERROR] motor " << i << " with code "
                   << low_state.motor_state()[i].motorstate() << "\n";
