@@ -1,6 +1,8 @@
 #include "include/system.hpp"
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Model.hh>
+#include <gz/sim/Joint.hh>
+#include <gz/math/Pose3.hh>
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -128,7 +130,12 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
 
     this->joints_logged = true;
     gz::sim::Model model = gz::sim::Model(id);
-    gzmsg << header << "Joint: " << model.JointByName(ecm, "left_hip_yaw_joint") << std::endl;
+    for (std::string joint_name : H1_2JointNames)
+    {
+        gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
+        gz::math::v7::Pose3d pose = joint.Pose(ecm).value();
+        gzmsg << header << joint_name << ": " << pose << std::endl;
+    }
 }
 
 // Include a line in your source file for each interface implemented.
