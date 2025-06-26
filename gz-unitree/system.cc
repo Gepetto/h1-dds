@@ -126,12 +126,6 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
         //     }
         // }
 
-        if (joint_name == "left_elbow_joint" || joint_name == "right_elbow_joint")
-        {
-            // TODO these dont have the full 3 angles, need to figure out what they should contain
-            continue;
-        }
-
         float angle;
         if (joint_name.find("pitch_joint") != std::string::npos)
         {
@@ -144,6 +138,10 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
         if (joint_name.find("yaw_joint") != std::string::npos || joint_name == "torso_joint")
         {
             angle = pose.Yaw();
+        }
+        if (joint_name == "left_elbow_joint" || joint_name == "right_elbow_joint")
+        {
+            angle = pose.Roll();
         }
 
         lowstate.motor_state().at(motor_state_index).q() = angle;
