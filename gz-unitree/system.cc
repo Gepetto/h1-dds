@@ -2,6 +2,9 @@
 #include <gz/plugin/Register.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Joint.hh>
+#include <gz/sim/Sensor.hh>
+// FIXME runtime linker error
+// #include <gz/sensors/ForceTorqueSensor.hh>
 #include <gz/math/Pose3.hh>
 #include <iostream>
 #include <fstream>
@@ -101,9 +104,27 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
     {
         gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
         gz::math::v7::Pose3d pose = joint.Pose(ecm).value();
-        std::optional<std::vector<double>> position = joint.Position(ecm);
+        auto velocity = joint.Velocity(ecm);
 
-        gzmsg << header << joint_name << ": " << pose << std::endl;
+        // auto generic_sensor = gz::sim::Sensor(joint.SensorByName(ecm, "torque"));
+        // auto sensor = gz::sensors::ForceTorqueSensor();
+
+        // gzmsg << header << "on " << joint_name
+        //       << ": torque = " << sensor.Force()
+        //       << std::endl;
+
+        // Velocity has only one component????
+        // if (velocity.has_value())
+        // {
+        //     uint i = 0;
+        //     for (auto component : velocity.value())
+        //     {
+        //         gzmsg << header << "on " << joint_name
+        //               << ": velocity[" << i << "] = " << component
+        //               << std::endl;
+        //         i++;
+        //     }
+        // }
 
         if (joint_name == "torso_joint" || joint_name == "left_elbow_joint" || joint_name == "right_elbow_joint")
         {
@@ -159,6 +180,16 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
         std::bind(&UnitreePlugin::CmdHandler, this, std::placeholders::_1), 1);
 
     gzmsg << header << "Created subscriber on channel 'rt/lowcmd'" << std::endl;
+
+    gz::sim::Model model = gz::sim::Model(this->model_id);
+
+    for (std::string joint_name : H1_2JointNames)
+    {
+        gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
+        joint.EnableVelocityCheck(ecm);
+    }
+
+    gzmsg << header << "Enabled velocity checking for all of model's joints" << std::endl;
 
     this->joints_logged = true;
 }
