@@ -1,3 +1,4 @@
+# sdf_path := "../gz_gepetto_humanoids_models/empty_h1_2.sdf"
 sdf_path := "../gz_gepetto_humanoids_models/h1_2/h1_2.sdf"
 
 install:
@@ -9,19 +10,29 @@ install:
 sim:
     echo Dont forget to add plugin filename="gz-unitree" name="gz::unitree::UnitreePlugin" to your SDF file, in the model tag
     just multicast lo
-    just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v | rg --fixed-strings '[Unitree]'
+    just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v | rg --fixed-strings '[Unitree] '
     # GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v 4
     # gz sim {{sdf_path}} -v 4
-test:
+
+mujoco:
+    #!/usr/bin/env bash
+    cd ../unitree_mujoco/simulate/build
+    cmake .. && make && ./unitree_mujoco
+
+testmuj:
+    just test "h1_low_level_example"
+
+
+test example="h1_27dof_example":
     #!/usr/bin/env bash
     just multicast lo
     cd ../unitree_sdk2
     mkdir -p build
     cd build
     cmake ..
-    make h1_27dof_example
-    echo Starting h1_27dof_example...
-    sudo bin/h1_27dof_example lo
+    make {{example}} || { echo "Build failed"; exit 1; }
+    echo Starting {{example}}...
+    sudo bin/{{example}} lo
     echo Done
 
 multicast iface="lo":

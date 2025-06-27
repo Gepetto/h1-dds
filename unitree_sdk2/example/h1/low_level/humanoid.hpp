@@ -23,7 +23,7 @@ static const std::string kTopicLowState = "rt/lowstate";
 class HumanoidExample {
 public:
   HumanoidExample(const std::string &networkInterface = "") {
-    unitree::robot::ChannelFactory::Instance()->Init(0, networkInterface);
+    unitree::robot::ChannelFactory::Instance()->Init(1, networkInterface);
     std::cout << "Initialize channel factory." << std::endl;
 
     msc.reset(new MotionSwitcherClient());
@@ -92,6 +92,15 @@ public:
         dds_low_command.motor_cmd().at(i).dq() = mc_tmp_ptr->dq_ref.at(i);
         dds_low_command.motor_cmd().at(i).kp() = mc_tmp_ptr->kp.at(i);
         dds_low_command.motor_cmd().at(i).kd() = mc_tmp_ptr->kd.at(i);
+
+        std::cout << "Writing low command message: "
+                  << "tau = " << dds_low_command.motor_cmd().at(i).tau()
+                  << ", q_target = " << dds_low_command.motor_cmd().at(i).q()
+                  << ", dq_target = "
+                  << dds_low_command.motor_cmd().at(i).dq()
+                  << ", kp = " << dds_low_command.motor_cmd().at(i).kp()
+                  << ", kd = " << dds_low_command.motor_cmd().at(i).kd()
+                  << std::endl;
       }
       dds_low_command.crc() = Crc32Core((uint32_t *)&dds_low_command,
                                         (sizeof(dds_low_command) >> 2) - 1);

@@ -21,34 +21,40 @@ using namespace unitree::robot;
 const int H1_NUM_MOTOR = 27;
 
 template <typename T>
-class DataBuffer {
- public:
-  void SetData(const T &newData) {
+class DataBuffer
+{
+public:
+  void SetData(const T &newData)
+  {
     std::unique_lock<std::shared_mutex> lock(mutex);
     data = std::make_shared<T>(newData);
   }
 
-  std::shared_ptr<const T> GetData() {
+  std::shared_ptr<const T> GetData()
+  {
     std::shared_lock<std::shared_mutex> lock(mutex);
     return data ? data : nullptr;
   }
 
-  void Clear() {
+  void Clear()
+  {
     std::unique_lock<std::shared_mutex> lock(mutex);
     data = nullptr;
   }
 
- private:
+private:
   std::shared_ptr<T> data;
   std::shared_mutex mutex;
 };
 
-struct ImuState {
+struct ImuState
+{
   std::array<float, 3> rpy = {};
   std::array<float, 3> omega = {};
 };
 
-struct MotorCommand {
+struct MotorCommand
+{
   std::array<float, H1_NUM_MOTOR> q_target = {};
   std::array<float, H1_NUM_MOTOR> dq_target = {};
   std::array<float, H1_NUM_MOTOR> kp = {};
@@ -56,12 +62,18 @@ struct MotorCommand {
   std::array<float, H1_NUM_MOTOR> tau_ff = {};
 };
 
-struct MotorState {
+struct MotorState
+{
   std::array<float, H1_NUM_MOTOR> q = {};
   std::array<float, H1_NUM_MOTOR> dq = {};
 };
 
-enum MotorType { GearboxS = 0, GearboxM = 1, GearboxL = 2 };
+enum MotorType
+{
+  GearboxS = 0,
+  GearboxM = 1,
+  GearboxL = 2
+};
 
 std::array<MotorType, H1_NUM_MOTOR> H1MotorType{
     // clang-format off
@@ -76,9 +88,14 @@ std::array<MotorType, H1_NUM_MOTOR> H1MotorType{
     // clang-format on
 };
 
-enum PRorAB { PR = 0, AB = 1 };
+enum PRorAB
+{
+  PR = 0,
+  AB = 1
+};
 
-enum H1JointIndex {
+enum H1JointIndex
+{
   // legs
   LeftHipYaw = 0,
   LeftHipPitch = 1,
@@ -115,21 +132,27 @@ enum H1JointIndex {
   RightWristYaw = 26
 };
 
-inline uint32_t Crc32Core(uint32_t *ptr, uint32_t len) {
+inline uint32_t Crc32Core(uint32_t *ptr, uint32_t len)
+{
   uint32_t xbit = 0;
   uint32_t data = 0;
   uint32_t CRC32 = 0xFFFFFFFF;
   const uint32_t dwPolynomial = 0x04c11db7;
-  for (uint32_t i = 0; i < len; i++) {
+  for (uint32_t i = 0; i < len; i++)
+  {
     xbit = 1 << 31;
     data = ptr[i];
-    for (uint32_t bits = 0; bits < 32; bits++) {
-      if (CRC32 & 0x80000000) {
+    for (uint32_t bits = 0; bits < 32; bits++)
+    {
+      if (CRC32 & 0x80000000)
+      {
         CRC32 <<= 1;
         CRC32 ^= dwPolynomial;
-      } else
+      }
+      else
         CRC32 <<= 1;
-      if (data & xbit) CRC32 ^= dwPolynomial;
+      if (data & xbit)
+        CRC32 ^= dwPolynomial;
 
       xbit >>= 1;
     }
@@ -137,37 +160,42 @@ inline uint32_t Crc32Core(uint32_t *ptr, uint32_t len) {
   return CRC32;
 };
 
-float GetMotorKp(MotorType type) {
-  switch (type) {
-    case GearboxS:
-      return 80;
-    case GearboxM:
-      return 100;
-    case GearboxL:
-      return 200;
-    default:
-      return 0;
+float GetMotorKp(MotorType type)
+{
+  switch (type)
+  {
+  case GearboxS:
+    return 80;
+  case GearboxM:
+    return 100;
+  case GearboxL:
+    return 200;
+  default:
+    return 0;
   }
 }
 
-float GetMotorKd(MotorType type) {
-  switch (type) {
-    case GearboxS:
-      return 2;
-    case GearboxM:
-      return 3;
-    case GearboxL:
-      return 5;
-    default:
-      return 0;
+float GetMotorKd(MotorType type)
+{
+  switch (type)
+  {
+  case GearboxS:
+    return 2;
+  case GearboxM:
+    return 3;
+  case GearboxL:
+    return 5;
+  default:
+    return 0;
   }
 }
 
-class H1Example {
- private:
+class H1Example
+{
+private:
   double time_;
-  double control_dt_;  // [2ms]
-  double duration_;    // [3 s]
+  double control_dt_; // [2ms]
+  double duration_;   // [3 s]
   PRorAB mode_;
   uint8_t mode_machine_;
 
@@ -179,13 +207,14 @@ class H1Example {
   ChannelSubscriberPtr<unitree_hg::msg::dds_::LowState_> lowstate_subscriber_;
   ThreadPtr command_writer_ptr_, control_thread_ptr_;
 
- public:
+public:
   H1Example(std::string networkInterface)
       : time_(0.0),
         control_dt_(0.002),
         duration_(3.0),
         mode_(PR),
-        mode_machine_(0) {
+        mode_machine_(0)
+  {
     ChannelFactory::Instance()->Init(1, networkInterface);
 
     // create publisher
@@ -211,36 +240,41 @@ class H1Example {
               << networkInterface << std::endl;
   }
 
-  void ReportRPY() {
+  void ReportRPY()
+  {
     const std::shared_ptr<const ImuState> imu_tmp_ptr =
         imu_state_buffer_.GetData();
-    if (imu_tmp_ptr) {
+    if (imu_tmp_ptr)
+    {
       std::cout << "rpy: [" << imu_tmp_ptr->rpy.at(0) << ", "
                 << imu_tmp_ptr->rpy.at(1) << ", " << imu_tmp_ptr->rpy.at(2)
                 << "]" << std::endl;
     }
   }
 
-  void LowStateHandler(const void *message) {
+  void LowStateHandler(const void *message)
+  {
     std::cout << "Received low state message" << std::endl;
     unitree_hg::msg::dds_::LowState_ low_state =
         *(const unitree_hg::msg::dds_::LowState_ *)message;
 
     if (low_state.crc() !=
         Crc32Core((uint32_t *)&low_state,
-                  (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1)) {
+                  (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1))
+    {
       std::cout << "low_state CRC Error" << std::endl;
       return;
     }
 
     // get motor state
     MotorState ms_tmp;
-    for (int i = 0; i < H1_NUM_MOTOR; ++i) {
+    for (int i = 0; i < H1_NUM_MOTOR; ++i)
+    {
       ms_tmp.q.at(i) = low_state.motor_state()[i].q();
       ms_tmp.dq.at(i) = low_state.motor_state()[i].dq();
 
-      std::cout << "Motor " << i << ": q = " << ms_tmp.q.at(i)
-                << ", dq = " << ms_tmp.dq.at(i) << std::endl;
+      // std::cout << "Motor " << i << ": q = " << ms_tmp.q.at(i)
+      //           << ", dq = " << ms_tmp.dq.at(i) << std::endl;
 
       if (low_state.motor_state()[i].motorstate())
         std::cout << "[ERROR] motor " << i << " with code "
@@ -255,7 +289,8 @@ class H1Example {
     imu_state_buffer_.SetData(imu_tmp);
 
     // update mode machine
-    if (mode_machine_ != low_state.mode_machine()) {
+    if (mode_machine_ != low_state.mode_machine())
+    {
       if (mode_machine_ == 0)
         std::cout << "G1 type: " << unsigned(low_state.mode_machine())
                   << std::endl;
@@ -263,17 +298,30 @@ class H1Example {
     }
   }
 
-  void LowCommandWriter() {
+  void LowCommandWriter()
+  {
     unitree_hg::msg::dds_::LowCmd_ dds_low_command;
     dds_low_command.mode_pr() = mode_;
     dds_low_command.mode_machine() = mode_machine_;
 
     const std::shared_ptr<const MotorCommand> mc =
         motor_command_buffer_.GetData();
-    if (mc) {
-      std::cout << "Writing low command message" << std::endl;
-      for (size_t i = 0; i < H1_NUM_MOTOR; i++) {
-        dds_low_command.motor_cmd().at(i).mode() = 1;  // 1:Enable, 0:Disable
+    if (mc)
+    {
+
+      for (size_t i = 0; i < H1_NUM_MOTOR; i++)
+      {
+        // std::cout << "Writing low command message: "
+        //           << "tau = " << mc->tau_ff.at(i) << ", "
+        //           << "q_target = " << mc->q_target.at(i) << ", "
+        //           << "dq_target = " << mc->dq_target.at(i) << ", "
+        //           << "kp = " << mc->kp.at(i) << ", "
+        //           << "kd = " << mc->kd.at(i)
+        //           << std::endl;
+        std::printf("Motor %ld: tau = %.2f, q_target = %.2f, dq_target = %.2f, kp = %.2f, kd = %.2f\n",
+                    i, mc->tau_ff.at(i), mc->q_target.at(i), mc->dq_target.at(i),
+                    mc->kp.at(i), mc->kd.at(i));
+        dds_low_command.motor_cmd().at(i).mode() = 1; // 1:Enable, 0:Disable
         dds_low_command.motor_cmd().at(i).tau() = mc->tau_ff.at(i);
         dds_low_command.motor_cmd().at(i).q() = mc->q_target.at(i);
         dds_low_command.motor_cmd().at(i).dq() = mc->dq_target.at(i);
@@ -284,23 +332,30 @@ class H1Example {
       dds_low_command.crc() = Crc32Core((uint32_t *)&dds_low_command,
                                         (sizeof(dds_low_command) >> 2) - 1);
       lowcmd_publisher_->Write(dds_low_command);
-    } else {
+    }
+    else
+    {
       std::cout << "No motor command data available to write." << std::endl;
     }
   }
 
-  void Control() {
+  void Control()
+  {
     ReportRPY();
 
     MotorCommand motor_command_tmp;
     const std::shared_ptr<const MotorState> ms = motor_state_buffer_.GetData();
 
-    if (ms) {
+    if (ms)
+    {
       std::cout << "State in buffer. Controlling robot at time: " << time_ << std::endl;
       time_ += control_dt_;
-      if (time_ < duration_ * 1) {
+      if (time_ < duration_ * 1)
+      {
+        std::cout << "[Stage 1] Setting robot to zero posture." << std::endl;
         // [Stage 1]: set robot to zero posture
-        for (int i = 0; i < H1_NUM_MOTOR; ++i) {
+        for (int i = 0; i < H1_NUM_MOTOR; ++i)
+        {
           double ratio = std::clamp(time_ / duration_, 0.0, 1.0);
 
           double q_des = 0;
@@ -311,7 +366,10 @@ class H1Example {
           motor_command_tmp.kp.at(i) = GetMotorKp(H1MotorType[i]);
           motor_command_tmp.kd.at(i) = GetMotorKd(H1MotorType[i]);
         }
-      } else if (time_ < duration_ * 2) {
+      }
+      else if (time_ < duration_ * 2)
+      {
+        std::cout << "[Stage 2] Swinging ankle's PR." << std::endl;
         // [Stage 2]: swing ankle's PR
         mode_ = PR;
         double max_P = M_PI * 30.0 / 180.0;
@@ -322,7 +380,8 @@ class H1Example {
         double R_P_des = +max_P * std::sin(2.0 * M_PI * t);
         double R_R_des = -max_R * std::sin(2.0 * M_PI * t);
 
-        for (int i = 0; i < H1_NUM_MOTOR; ++i) {
+        for (int i = 0; i < H1_NUM_MOTOR; ++i)
+        {
           motor_command_tmp.tau_ff.at(i) = 0.0;
           motor_command_tmp.q_target.at(i) = 0.0;
           motor_command_tmp.dq_target.at(i) = 0.0;
@@ -334,7 +393,10 @@ class H1Example {
         motor_command_tmp.q_target.at(LeftAnkleRoll) = L_R_des;
         motor_command_tmp.q_target.at(RightAnklePitch) = R_P_des;
         motor_command_tmp.q_target.at(RightAnkleRoll) = R_R_des;
-      } else {
+      }
+      else
+      {
+        std::cout << "[Stage 3] Swinging ankle's AB." << std::endl;
         // [Stage 3]: swing ankle's AB
         mode_ = AB;
         double max_A = M_PI * 30.0 / 180.0;
@@ -345,7 +407,8 @@ class H1Example {
         double R_A_des = -max_A * std::sin(M_PI * t);
         double R_B_des = -max_B * std::sin(M_PI * t + M_PI);
 
-        for (int i = 0; i < H1_NUM_MOTOR; ++i) {
+        for (int i = 0; i < H1_NUM_MOTOR; ++i)
+        {
           motor_command_tmp.tau_ff.at(i) = 0.0;
           motor_command_tmp.q_target.at(i) = 0.0;
           motor_command_tmp.dq_target.at(i) = 0.0;
@@ -365,15 +428,18 @@ class H1Example {
   }
 };
 
-int main(int argc, char const *argv[]) {
-  if (argc < 2) {
+int main(int argc, char const *argv[])
+{
+  if (argc < 2)
+  {
     std::cout << "Usage: h1_27dof_example network_interface_name" << std::endl;
     exit(0);
   }
   std::string networkInterface = argv[1];
   H1Example custom(networkInterface);
 
-  while (true) sleep(10);
+  while (true)
+    sleep(10);
 
   return 0;
 }
