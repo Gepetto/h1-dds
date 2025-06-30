@@ -152,51 +152,6 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
 
     lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
     this->state_publisher->Write(lowstate);
-
-    auto cmdbuf = this->motor_command_buffer.GetData();
-
-    uint motor_state_index = 0;
-    for (std::string joint_name : H1_2JointNames)
-    {
-        gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
-
-        auto force = cmdbuf.tau_ff.at(motor_state_index) +
-                     cmdbuf.kp.at(motor_state_index) * (cmdbuf.q_target.at(motor_state_index) - lowstate.motor_state().at(motor_state_index).q()) +
-                     cmdbuf.kd.at(motor_state_index) * (cmdbuf.dq_target.at(motor_state_index) - lowstate.motor_state().at(motor_state_index).dq());
-        // auto generic_sensor = gz::sim::Sensor(joint.SensorByName(ecm, "torque"));
-        // auto sensor = gz::sensors::ForceTorqueSensor();
-
-        // gzmsg << header << "on " << joint_name
-        //       << ": torque = " << sensor.Force()
-        //       << std::endl;
-
-        std::vector<double> torque = {0, 0, 0};
-        if (joint_name.find("pitch_joint") != std::string::npos)
-        {
-            torque[1] = force;
-        }
-        if (joint_name.find("roll_joint") != std::string::npos)
-        {
-            torque[2] = force;
-        }
-        if (joint_name.find("yaw_joint") != std::string::npos || joint_name == "torso_joint")
-        {
-            torque[0] = force;
-        }
-        if (joint_name == "left_elbow_joint" || joint_name == "right_elbow_joint")
-        {
-            torque[2] = force;
-        }
-
-        joint.SetForce(ecm, force);
-
-        // std::cout << header << "on " << joint_name
-        //           << ": q = " << lowstate.motor_state().at(motor_state_index).q()
-        //           << ", dq = " << lowstate.motor_state().at(motor_state_index).dq()
-        //           << std::endl;
-
-        motor_state_index++;
-    }
 }
 
 void UnitreePlugin::Configure(const gz::sim::Entity &id,
