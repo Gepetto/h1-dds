@@ -102,32 +102,21 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
     for (std::string joint_name : H1_2JointNames)
     {
         gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
-        gz::math::v7::Pose3d pose = joint.Pose(ecm).value();
+        auto position = joint.Position(ecm).value();
         auto velocity = joint.Velocity(ecm);
 
         // auto generic_sensor = gz::sim::Sensor(joint.SensorByName(ecm, "torque"));
         // auto sensor = gz::sensors::ForceTorqueSensor();
 
-        // gzmsg << header << "on " << joint_name
-        //       << ": torque = " << sensor.Force()
-        //       << std::endl;
-
-        float angle;
-        if (joint_name.find("pitch_joint") != std::string::npos)
+        float angle = 0.0f;
+        if (position.size() > 0)
         {
-            angle = pose.Pitch();
+            angle = position.at(0);
         }
-        if (joint_name.find("roll_joint") != std::string::npos)
+        else
         {
-            angle = pose.Roll();
-        }
-        if (joint_name.find("yaw_joint") != std::string::npos || joint_name == "torso_joint")
-        {
-            angle = pose.Yaw();
-        }
-        if (joint_name == "left_elbow_joint" || joint_name == "right_elbow_joint")
-        {
-            angle = pose.Roll();
+            gzerr << header << "No position data available for joint: " << joint_name << std::endl;
+            continue;
         }
 
         lowstate.motor_state().at(motor_state_index).q() = angle;
@@ -141,10 +130,10 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
             lowstate.motor_state().at(motor_state_index).dq() = 0.0f;
         }
 
-        // std::cout << header << "on " << joint_name
-        //           << ": q = " << lowstate.motor_state().at(motor_state_index).q()
-        //           << ", dq = " << lowstate.motor_state().at(motor_state_index).dq()
-        //           << std::endl;
+        std::cout << header << "on " << joint_name
+                  << ": q = " << lowstate.motor_state().at(motor_state_index).q()
+                  << ", dq = " << lowstate.motor_state().at(motor_state_index).dq()
+                  << std::endl;
 
         motor_state_index++;
     }
@@ -239,9 +228,10 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
     {
         gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
         joint.EnableVelocityCheck(ecm);
+        joint.EnablePositionCheck(ecm);
     }
 
-    gzmsg << header << "Enabled velocity checking for all of model's joints" << std::endl;
+    gzmsg << header << "Enabled velocity and position checking for all of model's joints" << std::endl;
 
     this->joints_logged = true;
 }
