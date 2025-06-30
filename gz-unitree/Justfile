@@ -1,5 +1,5 @@
 # sdf_path := "../gz_gepetto_humanoids_models/empty_h1_2.sdf"
-sdf_path := "../gz_gepetto_humanoids_models/h1_2/h1_2.sdf"
+sdf_path := "../gz_gepetto_humanoids_models/h1_2/h1_2_with_ground.sdf"
 
 install:
     #!/usr/bin/env bash

@@ -10,4 +10,4 @@
 	url = https://github.com/unitreerobotics/unitree_ros2
 [submodule "gz_gepetto_humanoids_models"]
 	path = gz_gepetto_humanoids_models
-	url = git@gitlab.laas.fr:ostasse/gz_gepetto_humanoids_models
+	url = git@gitlab.laas.fr:glebihan/gz_gepetto_humanoids_models
