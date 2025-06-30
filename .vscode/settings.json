@@ -6,5 +6,11 @@
         "functional": "cpp",
         "iostream": "cpp"
     },
-    "cmake.sourceDirectory": "/work/h1-dds/unitree_sdk2/example/b2"
+    "cmake.sourceDirectory": "/work/h1-dds/unitree_sdk2/example/b2",
+    "cSpell.words": [
+        "gepetto",
+        "iface",
+        "libgz",
+        "unitree"
+    ]
 }
