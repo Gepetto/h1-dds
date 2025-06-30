@@ -10,7 +10,7 @@ install:
 sim:
     echo Dont forget to add plugin filename="gz-unitree" name="gz::unitree::UnitreePlugin" to your SDF file, in the model tag
     just multicast lo
-    just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v | rg --fixed-strings '[Unitree] '
+    just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} # | rg --fixed-strings '[Unitree] '
     # GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v 4
     # gz sim {{sdf_path}} -v 4
 

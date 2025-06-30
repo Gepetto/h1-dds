@@ -130,10 +130,10 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
             lowstate.motor_state().at(motor_state_index).dq() = 0.0f;
         }
 
-        std::cout << header << "on " << joint_name
-                  << ": q = " << lowstate.motor_state().at(motor_state_index).q()
-                  << ", dq = " << lowstate.motor_state().at(motor_state_index).dq()
-                  << std::endl;
+        // std::cout << header << "on " << joint_name
+        //           << ": q = " << lowstate.motor_state().at(motor_state_index).q()
+        //           << ", dq = " << lowstate.motor_state().at(motor_state_index).dq()
+        //           << std::endl;
 
         motor_state_index++;
     }
@@ -150,7 +150,7 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
 
         if (!cmdbuf || cmdbuf->q_target.size() <= motor_state_index)
         {
-            gzerr << header << "No command data available for joint: " << joint_name << std::endl;
+            gzmsg << header << "No command data available for joint: " << joint_name << std::endl;
             motor_state_index++;
             continue;
         }
