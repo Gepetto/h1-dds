@@ -174,8 +174,8 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
 
     gzmsg << header << "Created publisher on channel 'rt/lowstate'" << std::endl;
 
-    ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_> subscriber = ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_>(new ChannelSubscriber<unitree_hg::msg::dds_::LowCmd_>("rt/lowcmd"));
-    subscriber->InitChannel(
+    this->cmd_subscriber = ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_>(new ChannelSubscriber<unitree_hg::msg::dds_::LowCmd_>("rt/lowcmd"));
+    this->cmd_subscriber->InitChannel(
         std::bind(&UnitreePlugin::CmdHandler, this, std::placeholders::_1), 1);
 
     gzmsg << header << "Created subscriber on channel 'rt/lowcmd'" << std::endl;

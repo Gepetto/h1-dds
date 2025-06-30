@@ -35,6 +35,9 @@ namespace gz_unitree
         ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_> state_publisher;
         ThreadPtr publisher_thread;
 
+        // Subscriber (to prevent going out of scope)
+        ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_> cmd_subscriber;
+
         bool state_sent;
         bool joints_logged;
 
