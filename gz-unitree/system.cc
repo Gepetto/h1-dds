@@ -3,8 +3,6 @@
 #include <gz/sim/Model.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Sensor.hh>
-// FIXME runtime linker error
-// #include <gz/sensors/ForceTorqueSensor.hh>
 #include <gz/math/Pose3.hh>
 #include <iostream>
 #include <fstream>
@@ -105,9 +103,6 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
         auto position = joint.Position(ecm).value();
         auto velocity = joint.Velocity(ecm);
 
-        // auto generic_sensor = gz::sim::Sensor(joint.SensorByName(ecm, "torque"));
-        // auto sensor = gz::sensors::ForceTorqueSensor();
-
         float angle = 0.0f;
         if (position.size() > 0)
         {
@@ -129,11 +124,6 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
         {
             lowstate.motor_state().at(motor_state_index).dq() = 0.0f;
         }
-
-        // std::cout << header << "on " << joint_name
-        //           << ": q = " << lowstate.motor_state().at(motor_state_index).q()
-        //           << ", dq = " << lowstate.motor_state().at(motor_state_index).dq()
-        //           << std::endl;
 
         motor_state_index++;
     }
@@ -159,38 +149,8 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
                      cmdbuf->kp.at(motor_state_index) * (cmdbuf->q_target.at(motor_state_index) - lowstate.motor_state().at(motor_state_index).q()) +
                      cmdbuf->kd.at(motor_state_index) * (cmdbuf->dq_target.at(motor_state_index) - lowstate.motor_state().at(motor_state_index).dq());
 
-        gzmsg << header << "on " << joint_name << " sending " << force << std::endl;
-        // auto generic_sensor = gz::sim::Sensor(joint.SensorByName(ecm, "torque"));
-        // auto sensor = gz::sensors::ForceTorqueSensor();
-
-        // gzmsg << header << "on " << joint_name
-        //       << ": torque = " << sensor.Force()
-        //       << std::endl;
-
         std::vector<double> torque = {force};
-        // if (joint_name.find("pitch_joint") != std::string::npos)
-        // {
-        //     torque[1] = force;
-        // }
-        // if (joint_name.find("roll_joint") != std::string::npos)
-        // {
-        //     torque[2] = force;
-        // }
-        // if (joint_name.find("yaw_joint") != std::string::npos || joint_name == "torso_joint")
-        // {
-        //     torque[0] = force;
-        // }
-        // if (joint_name == "left_elbow_joint" || joint_name == "right_elbow_joint")
-        // {
-        //     torque[2] = force;
-        // }
-
         joint.SetForce(ecm, torque);
-
-        // std::cout << header << "on " << joint_name
-        //           << ": q = " << lowstate.motor_state().at(motor_state_index).q()
-        //           << ", dq = " << lowstate.motor_state().at(motor_state_index).dq()
-        //           << std::endl;
 
         motor_state_index++;
     }

@@ -235,9 +235,6 @@ public:
                                 &H1Example::LowCommandWriter, this);
     control_thread_ptr_ = CreateRecurrentThreadEx(
         "control", UT_CPU_ID_NONE, 2000, &H1Example::Control, this);
-
-    std::cout << "H1Example initialized with network interface: "
-              << networkInterface << std::endl;
   }
 
   void ReportRPY()
@@ -254,7 +251,6 @@ public:
 
   void LowStateHandler(const void *message)
   {
-    // std::cout << "Received low state message" << std::endl;
     unitree_hg::msg::dds_::LowState_ low_state =
         *(const unitree_hg::msg::dds_::LowState_ *)message;
 
@@ -272,9 +268,6 @@ public:
     {
       ms_tmp.q.at(i) = low_state.motor_state()[i].q();
       ms_tmp.dq.at(i) = low_state.motor_state()[i].dq();
-
-      // std::cout << "Motor " << i << ": q = " << ms_tmp.q.at(i)
-      //           << ", dq = " << ms_tmp.dq.at(i) << std::endl;
 
       if (low_state.motor_state()[i].motorstate())
         std::cout << "[ERROR] motor " << i << " with code "
@@ -308,19 +301,8 @@ public:
         motor_command_buffer_.GetData();
     if (mc)
     {
-
       for (size_t i = 0; i < H1_NUM_MOTOR; i++)
       {
-        // std::cout << "Writing low command message: "
-        //           << "tau = " << mc->tau_ff.at(i) << ", "
-        //           << "q_target = " << mc->q_target.at(i) << ", "
-        //           << "dq_target = " << mc->dq_target.at(i) << ", "
-        //           << "kp = " << mc->kp.at(i) << ", "
-        //           << "kd = " << mc->kd.at(i)
-        //           << std::endl;
-        // std::printf("Motor %ld: tau = %.2f, q_target = %.2f, dq_target = %.2f, kp = %.2f, kd = %.2f\n",
-        //             i, mc->tau_ff.at(i), mc->q_target.at(i), mc->dq_target.at(i),
-        //             mc->kp.at(i), mc->kd.at(i));
         dds_low_command.motor_cmd().at(i).mode() = 1; // 1:Enable, 0:Disable
         dds_low_command.motor_cmd().at(i).tau() = mc->tau_ff.at(i);
         dds_low_command.motor_cmd().at(i).q() = mc->q_target.at(i);
@@ -333,10 +315,6 @@ public:
                                         (sizeof(dds_low_command) >> 2) - 1);
       lowcmd_publisher_->Write(dds_low_command);
     }
-    else
-    {
-      // std::cout << "No motor command data available to write." << std::endl;
-    }
   }
 
   void Control()
@@ -348,11 +326,9 @@ public:
 
     if (ms)
     {
-      // std::cout << "State in buffer. Controlling robot at time: " << time_ << std::endl;
       time_ += control_dt_;
       if (time_ < duration_ * 1)
       {
-        // std::cout << "[Stage 1] Setting robot to zero posture." << std::endl;
         // [Stage 1]: set robot to zero posture
         for (int i = 0; i < H1_NUM_MOTOR; ++i)
         {
@@ -369,7 +345,6 @@ public:
       }
       else if (time_ < duration_ * 2)
       {
-        // std::cout << "[Stage 2] Swinging ankle's PR." << std::endl;
         // [Stage 2]: swing ankle's PR
         mode_ = PR;
         double max_P = M_PI * 30.0 / 180.0;
@@ -396,7 +371,6 @@ public:
       }
       else
       {
-        // std::cout << "[Stage 3] Swinging ankle's AB." << std::endl;
         // [Stage 3]: swing ankle's AB
         mode_ = AB;
         double max_A = M_PI * 30.0 / 180.0;
@@ -422,7 +396,6 @@ public:
         motor_command_tmp.q_target.at(RightAnkleB) = R_B_des;
       }
 
-      // std::cout << "Setting data for motors at time: " << time_ << std::endl;
       motor_command_buffer_.SetData(motor_command_tmp);
     }
   }
