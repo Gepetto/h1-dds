@@ -110,7 +110,6 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
         }
         else
         {
-            gzerr << header << "No position data available for joint: " << joint_name << std::endl;
             continue;
         }
 
@@ -183,6 +182,8 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
     gzmsg << header << "Created subscriber on channel 'rt/lowcmd'" << std::endl;
 
     gz::sim::Model model = gz::sim::Model(this->model_id);
+
+    model.SelfCollide(ecm);
 
     for (std::string joint_name : H1_2JointNames)
     {
