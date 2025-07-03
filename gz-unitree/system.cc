@@ -139,7 +139,6 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
 
         if (!cmdbuf || cmdbuf->q_target.size() <= motor_state_index)
         {
-            gzmsg << header << "No command data available for joint: " << joint_name << std::endl;
             motor_state_index++;
             continue;
         }
