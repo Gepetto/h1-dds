@@ -40,8 +40,12 @@ private:
 
 struct ImuState
 {
-    std::array<float, 3> rpy;
-    std::array<float, 3> omega;
+    float quaternion[4];
+    float gyroscope[3];
+    float accelerometer[3];
+    float rpy[3];
+
+    short temperature;
 };
 
 struct MotorCommand
@@ -104,9 +108,9 @@ enum H1JointIndex
     RightAnkleB = 10, // ?
     RightAnkleRoll = 11,
     RightAnkleA = 11, // ?
-    // torso
+                      // torso
     WaistYaw = 12, // == torso_joint ?
-    // arms
+                   // arms
 
     LeftShoulderPitch = 13,
     LeftShoulderRoll = 14,
@@ -115,7 +119,6 @@ enum H1JointIndex
     LeftWristRoll = 17,
     LeftWristPitch = 18,
     LeftWristYaw = 19,
-
 
     // ...
     // L_(middle|pinky|ring|thumb)_proximal_joint missing
@@ -190,8 +193,8 @@ enum H1_2JointIndex
 };
 
 std::string H1_2JointNames[] =
-{
-    "left_hip_yaw_joint",
+    {
+        "left_hip_yaw_joint",
         "left_hip_pitch_joint",
         "left_hip_roll_joint",
         "left_knee_joint",

@@ -1,6 +1,7 @@
 #include <gz/sim/System.hh>
 #include "../data.hpp"
 #include <unitree/robot/channel/channel_publisher.hpp>
+#include <gz/msgs/imu.pb.h>
 #include <unitree/robot/channel/channel_subscriber.hpp>
 #include <unitree/idl/hg/LowCmd_.hpp>
 #include <unitree/idl/hg/LowState_.hpp>
@@ -20,6 +21,7 @@ namespace gz_unitree
     private:
         void CmdHandler(const void *msg);
         void LowStateWriter();
+        void IMUHandler(const gz::msgs::IMU &_msg);
 
     private:
         // Buffers

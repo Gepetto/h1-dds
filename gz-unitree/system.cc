@@ -4,6 +4,9 @@
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Sensor.hh>
 #include <gz/math/Pose3.hh>
+#include <gz/transport.hh>
+#include <gz/msgs/Utility.hh>
+#include <gz/msgs/imu.pb.h>
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -81,6 +84,117 @@ void UnitreePlugin::CmdHandler(const void *msg)
     this->motor_command_buffer.SetData(motor_command_tmp);
 }
 
+void UnitreePlugin::IMUHandler(const gz::msgs::IMU &_msg)
+{
+    /*
+
+    header {
+  stamp {
+    sec: 2
+  }
+  data {
+    key: "frame_id"
+    value: "h1_2::torso_link::imu_sensor"
+  }
+  data {
+    key: "seq"
+    value: "2"
+  }
+}
+entity_name: "h1_2::torso_link::imu_sensor"
+orientation {
+  x: 0.038351578720791125
+  y: 0.705539905060143
+  z: -0.038790669484018513
+  w: 0.70656767739426707
+}
+orientation_covariance {
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+}
+angular_velocity {
+  x: -0.17287533017185
+  y: -0.13795466768844261
+  z: -0.091267442211552072
+}
+angular_velocity_covariance {
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+}
+linear_acceleration {
+  x: -9.800593283287748
+  y: 0.45835671778499282
+  z: -0.2208827579913305
+}
+linear_acceleration_covariance {
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+  data: 0
+}
+
+
+
+====
+
+dds message:
+
+quaternion[4] 	Quaternion of body posture, order: w、x、y、z
+rpy[3] 	Body attitude Euler angle information, order: r、p、y
+gyroscope[3] 	Aircraft attitude three-axis angular velocity information, order: r、p、y
+accelerometer[3] 	Three-axis acceleration information of the aircraft body, order: x、y、z
+
+    */
+    gzmsg << header << "Received IMU data" << std::endl;
+    this->imu_state_buffer.Clear();
+
+    double w = _msg.orientation().w();
+    double x = _msg.orientation().x();
+    double y = _msg.orientation().y();
+    double z = _msg.orientation().z();
+
+    ImuState imu_state_tmp;
+
+    imu_state_tmp.quaternion[0] = w;
+    imu_state_tmp.quaternion[1] = x;
+    imu_state_tmp.quaternion[2] = y;
+    imu_state_tmp.quaternion[3] = z;
+
+    imu_state_tmp.accelerometer[0] = _msg.linear_acceleration().x();
+    imu_state_tmp.accelerometer[1] = _msg.linear_acceleration().y();
+    imu_state_tmp.accelerometer[2] = _msg.linear_acceleration().z();
+
+    // why is angular velocity in x/y/z ???
+    imu_state_tmp.gyroscope[0] = _msg.angular_velocity().x();
+    imu_state_tmp.gyroscope[1] = _msg.angular_velocity().y();
+    imu_state_tmp.gyroscope[2] = _msg.angular_velocity().z();
+
+    imu_state_tmp.rpy[0] = atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y));
+    imu_state_tmp.rpy[1] = asin(2 * (w * y - z * x));
+    imu_state_tmp.rpy[2] = atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
+
+    this->imu_state_buffer.SetData(imu_state_tmp);
+}
+
 void UnitreePlugin::LowStateWriter()
 {
 }
@@ -125,6 +239,26 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
         }
 
         motor_state_index++;
+    }
+
+    auto imu = this->imu_state_buffer.GetData();
+
+    if (imu)
+    {
+        lowstate.imu_state().quaternion().at(0) = imu->quaternion[0];
+        lowstate.imu_state().quaternion().at(1) = imu->quaternion[1];
+        lowstate.imu_state().quaternion().at(2) = imu->quaternion[2];
+        lowstate.imu_state().quaternion().at(3) = imu->quaternion[3];
+        lowstate.imu_state().gyroscope().at(0) = imu->gyroscope[0];
+        lowstate.imu_state().gyroscope().at(1) = imu->gyroscope[1];
+        lowstate.imu_state().gyroscope().at(2) = imu->gyroscope[2];
+        lowstate.imu_state().accelerometer().at(0) = imu->accelerometer[0];
+        lowstate.imu_state().accelerometer().at(1) = imu->accelerometer[1];
+        lowstate.imu_state().accelerometer().at(2) = imu->accelerometer[2];
+        lowstate.imu_state().rpy().at(0) = imu->rpy[0];
+        lowstate.imu_state().rpy().at(1) = imu->rpy[1];
+        lowstate.imu_state().rpy().at(2) = imu->rpy[2];
+        lowstate.imu_state().temperature() = imu->temperature;
     }
 
     lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
@@ -193,6 +327,16 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
 
     gzmsg << header << "Enabled velocity and position checking for all of model's joints" << std::endl;
 
+    // gz::transport::Node imu_subscriber;
+    // if (!imu_subscriber.Subscribe("/imu", std::bind(&UnitreePlugin::IMUHandler, this, std::placeholders::_1), ))
+    // {
+    //     gzerr << header << "Failed to subscribe to IMU topic" << std::endl;
+    //     return;
+    // }
+    // else
+    // {
+    //     gzmsg << header << "Subscribed to IMU topic" << std::endl;
+    // }
     this->joints_logged = true;
 }
 
