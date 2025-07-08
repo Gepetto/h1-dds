@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include "crc32.cc"
 #include "data.hpp"
+#include "data.cpp"
 
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <unitree/robot/channel/channel_subscriber.hpp>
@@ -61,6 +62,7 @@ UnitreePlugin::UnitreePlugin()
 {
     this->state_sent = false;
     this->joints_logged = false;
+    // this->imu_subscriber = gz::transport::Node();
 }
 
 UnitreePlugin::~UnitreePlugin()
@@ -155,13 +157,16 @@ accelerometer[3] 	Three-axis acceleration information of the aircraft body, orde
     imu_state_tmp.rpy[2] = atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
 
     // why is angular velocity in x/y/z ???
-    imu_state_tmp.gyroscope = BodyAngularVelocityToEulerRates(
-                                  _msg.angular_velocity().x(),
-                                  _msg.angular_velocity().y(),
-                                  _msg.angular_velocity().z(),
-                                  imu_state_tmp.rpy[0],
-                                  imu_state_tmp.rpy[1], )
-                                  imu_state_tmp.gyroscope[2] = _msg.angular_velocity().z();
+    // auto gyro = BodyAngularVelocityToEulerRates(
+    //     _msg.angular_velocity().x(),
+    //     _msg.angular_velocity().y(),
+    //     _msg.angular_velocity().z(),
+    //     imu_state_tmp.rpy[0],
+    //     imu_state_tmp.rpy[1]);
+
+    imu_state_tmp.gyroscope[0] = _msg.angular_velocity().x();
+    imu_state_tmp.gyroscope[1] = _msg.angular_velocity().y();
+    imu_state_tmp.gyroscope[2] = _msg.angular_velocity().z();
 
     this->imu_state_buffer.SetData(imu_state_tmp);
 }
@@ -259,15 +264,6 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
     }
 }
 
-void test_cb(const gz::msgs::IMU &_msg)
-{
-    std::cout << header << "Received IMU data in test callback" << std::endl;
-    std::cout << header << "Orientation: [" << _msg.orientation().x() << ", "
-              << _msg.orientation().y() << ", "
-              << _msg.orientation().z() << ", "
-              << _msg.orientation().w() << "]" << std::endl;
-}
-
 void UnitreePlugin::Configure(const gz::sim::Entity &id,
                               const std::shared_ptr<const sdf::Element> &_sdf,
                               gz::sim::EntityComponentManager &ecm,
@@ -307,9 +303,8 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
 
     gzmsg << header << "Enabled velocity and position checking for all of model's joints" << std::endl;
 
-    gz::transport::Node imu_subscriber;
     std::function<void(const gz::msgs::IMU &)> bound_imu_cb = std::bind(&UnitreePlugin::IMUHandler, this, std::placeholders::_1);
-    if (!imu_subscriber.Subscribe("/imu", test_cb))
+    if (!this->imu_subscriber.Subscribe("/imu", bound_imu_cb))
     {
         gzerr << header << "Failed to subscribe to IMU topic" << std::endl;
         return;

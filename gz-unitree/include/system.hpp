@@ -3,6 +3,7 @@
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <gz/msgs/imu.pb.h>
 #include <unitree/robot/channel/channel_subscriber.hpp>
+#include <gz/transport.hh>
 #include <unitree/idl/hg/LowCmd_.hpp>
 #include <unitree/idl/hg/LowState_.hpp>
 
@@ -39,6 +40,7 @@ namespace gz_unitree
 
         // Subscriber (to prevent going out of scope)
         ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_> cmd_subscriber;
+        gz::transport::Node imu_subscriber;
 
         bool state_sent;
         bool joints_logged;

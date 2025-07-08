@@ -17,9 +17,6 @@ std::array<double, 3> BodyAngularVelocityToEulerRates(
         cp = (cp >= 0) ? epsilon : -epsilon;
     }
 
-    // Angular velocity vector
-    double omega[3] = {omega_x, omega_y, omega_z};
-
     // Compute Euler rates
     double roll_dot  = omega_x + sr * tp * omega_y + cr * tp * omega_z;
     double pitch_dot =         cr * omega_y         - sr * omega_z;
