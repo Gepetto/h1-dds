@@ -108,48 +108,15 @@ orientation {
   z: -0.038790669484018513
   w: 0.70656767739426707
 }
-orientation_covariance {
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-}
 angular_velocity {
   x: -0.17287533017185
   y: -0.13795466768844261
   z: -0.091267442211552072
 }
-angular_velocity_covariance {
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-}
 linear_acceleration {
   x: -9.800593283287748
   y: 0.45835671778499282
   z: -0.2208827579913305
-}
-linear_acceleration_covariance {
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
-  data: 0
 }
 
 
@@ -183,14 +150,18 @@ accelerometer[3] 	Three-axis acceleration information of the aircraft body, orde
     imu_state_tmp.accelerometer[1] = _msg.linear_acceleration().y();
     imu_state_tmp.accelerometer[2] = _msg.linear_acceleration().z();
 
-    // why is angular velocity in x/y/z ???
-    imu_state_tmp.gyroscope[0] = _msg.angular_velocity().x();
-    imu_state_tmp.gyroscope[1] = _msg.angular_velocity().y();
-    imu_state_tmp.gyroscope[2] = _msg.angular_velocity().z();
-
     imu_state_tmp.rpy[0] = atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y));
     imu_state_tmp.rpy[1] = asin(2 * (w * y - z * x));
     imu_state_tmp.rpy[2] = atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
+
+    // why is angular velocity in x/y/z ???
+    imu_state_tmp.gyroscope = BodyAngularVelocityToEulerRates(
+                                  _msg.angular_velocity().x(),
+                                  _msg.angular_velocity().y(),
+                                  _msg.angular_velocity().z(),
+                                  imu_state_tmp.rpy[0],
+                                  imu_state_tmp.rpy[1], )
+                                  imu_state_tmp.gyroscope[2] = _msg.angular_velocity().z();
 
     this->imu_state_buffer.SetData(imu_state_tmp);
 }
