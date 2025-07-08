@@ -10,9 +10,10 @@ install:
 sim logfile="with_imu_on_model.log":
     echo Dont forget to add plugin filename="gz-unitree" name="gz::unitree::UnitreePlugin" to your SDF file, in the model tag
     just multicast lo
-    just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v 4 >{{logfile}} 2>&1
-    uvx --with strip-ansi python -c "from pathlib import Path; from strip_ansi import strip_ansi; Path('{{logfile}}').write_text(strip_ansi(Path('{{logfile}}').read_text()))"
-    diff -y --width 250 without_imu.log {{logfile}} | code --no-sandbox -
+    just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v 4 | rg --fixed-strings '[Unitree]'
+    # just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v 4 >{{logfile}} 2>&1
+    # uvx --with strip-ansi python -c "from pathlib import Path; from strip_ansi import strip_ansi; Path('{{logfile}}').write_text(strip_ansi(Path('{{logfile}}').read_text()))"
+    # diff -y --width 250 without_imu.log {{logfile}} | code --no-sandbox -
 
 mujoco:
     #!/usr/bin/env bash

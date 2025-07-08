@@ -327,16 +327,17 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
 
     gzmsg << header << "Enabled velocity and position checking for all of model's joints" << std::endl;
 
-    // gz::transport::Node imu_subscriber;
-    // if (!imu_subscriber.Subscribe("/imu", std::bind(&UnitreePlugin::IMUHandler, this, std::placeholders::_1), ))
-    // {
-    //     gzerr << header << "Failed to subscribe to IMU topic" << std::endl;
-    //     return;
-    // }
-    // else
-    // {
-    //     gzmsg << header << "Subscribed to IMU topic" << std::endl;
-    // }
+    gz::transport::Node imu_subscriber;
+    std::function<void(const gz::msgs::IMU &)> bound_imu_cb = std::bind(&UnitreePlugin::IMUHandler, this, std::placeholders::_1);
+    if (!imu_subscriber.Subscribe("/imu", bound_imu_cb))
+    {
+        gzerr << header << "Failed to subscribe to IMU topic" << std::endl;
+        return;
+    }
+    else
+    {
+        gzmsg << header << "Subscribed to IMU topic" << std::endl;
+    }
     this->joints_logged = true;
 }
 
