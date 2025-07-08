@@ -288,6 +288,15 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
     }
 }
 
+void test_cb(const gz::msgs::IMU &_msg)
+{
+    std::cout << header << "Received IMU data in test callback" << std::endl;
+    std::cout << header << "Orientation: [" << _msg.orientation().x() << ", "
+              << _msg.orientation().y() << ", "
+              << _msg.orientation().z() << ", "
+              << _msg.orientation().w() << "]" << std::endl;
+}
+
 void UnitreePlugin::Configure(const gz::sim::Entity &id,
                               const std::shared_ptr<const sdf::Element> &_sdf,
                               gz::sim::EntityComponentManager &ecm,
@@ -329,7 +338,7 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
 
     gz::transport::Node imu_subscriber;
     std::function<void(const gz::msgs::IMU &)> bound_imu_cb = std::bind(&UnitreePlugin::IMUHandler, this, std::placeholders::_1);
-    if (!imu_subscriber.Subscribe("/imu", bound_imu_cb))
+    if (!imu_subscriber.Subscribe("/imu", test_cb))
     {
         gzerr << header << "Failed to subscribe to IMU topic" << std::endl;
         return;
