@@ -11,3 +11,6 @@
 [submodule "gz_gepetto_humanoids_models"]
 	path = gz_gepetto_humanoids_models
 	url = git@gitlab.laas.fr:glebihan/gz_gepetto_humanoids_models
+[submodule "h1v2-Isaac"]
+	path = h1v2-Isaac
+	url = https://github.com/gwennlbh/h1v2-Isaac
