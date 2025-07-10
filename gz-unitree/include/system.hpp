@@ -2,6 +2,7 @@
 #include "../data.hpp"
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <gz/msgs/imu.pb.h>
+#include <gz/msgs/clock.pb.h>
 #include <unitree/robot/channel/channel_subscriber.hpp>
 #include <gz/transport.hh>
 #include <unitree/idl/hg/LowCmd_.hpp>
@@ -23,12 +24,16 @@ namespace gz_unitree
         void CmdHandler(const void *msg);
         void LowStateWriter();
         void IMUHandler(const gz::msgs::IMU &_msg);
+        void TickHandler(const gz::msgs::Clock &_msg);
 
     private:
         // Buffers
         DataBuffer<MotorState> motor_state_buffer;
         DataBuffer<MotorCommand> motor_command_buffer;
         DataBuffer<ImuState> imu_state_buffer;
+
+        // Tick
+        unsigned long sim_tick;
 
         // ECM
         // gz::sim::EntityComponentManager& ecm;
@@ -41,6 +46,7 @@ namespace gz_unitree
         // Subscriber (to prevent going out of scope)
         ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_> cmd_subscriber;
         gz::transport::Node imu_subscriber;
+        gz::transport::Node clock_subscriber;
 
         bool state_sent;
         bool joints_logged;

@@ -7,6 +7,7 @@
 #include <gz/transport.hh>
 #include <gz/msgs/Utility.hh>
 #include <gz/msgs/imu.pb.h>
+#include <gz/msgs/clock.pb.h>
 #include <iostream>
 #include <fstream>
 #include <stdio.h>
@@ -133,7 +134,6 @@ gyroscope[3] 	Aircraft attitude three-axis angular velocity information, order: 
 accelerometer[3] 	Three-axis acceleration information of the aircraft body, order: x、y、z
 
     */
-    gzmsg << header << "Received IMU data" << std::endl;
     this->imu_state_buffer.Clear();
 
     double w = _msg.orientation().w();
@@ -169,6 +169,11 @@ accelerometer[3] 	Three-axis acceleration information of the aircraft body, orde
     imu_state_tmp.gyroscope[2] = _msg.angular_velocity().z();
 
     this->imu_state_buffer.SetData(imu_state_tmp);
+}
+
+void UnitreePlugin::TickHandler(const gz::msgs::Clock &_msg)
+{
+    this->sim_tick = _msg.sim().sec() * 1000 + _msg.sim().nsec() / 1000000;
 }
 
 void UnitreePlugin::LowStateWriter()
@@ -237,6 +242,7 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
         lowstate.imu_state().temperature() = imu->temperature;
     }
 
+    lowstate.tick() = this->sim_tick;
     lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
     this->state_publisher->Write(lowstate);
 
@@ -313,6 +319,14 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
     {
         gzmsg << header << "Subscribed to IMU topic" << std::endl;
     }
+
+    std::function<void(const gz::msgs::Clock &)> bound_tick_cb = std::bind(&UnitreePlugin::TickHandler, this, std::placeholders::_1);
+    if (!this->clock_subscriber.Subscribe("/clock", bound_tick_cb))
+    {
+        gzerr << header << "Failed to subscribe to clock topic" << std::endl;
+        return;
+    }
+
     this->joints_logged = true;
 }
 
