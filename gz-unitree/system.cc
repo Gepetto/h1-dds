@@ -154,7 +154,7 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
     unitree_hg::msg::dds_::LowState_ lowstate{};
     gz::sim::Model model = gz::sim::Model(this->model_id);
 
-    GZ_PROFILE_BEGIN("Set motor state for joint");
+    GZ_PROFILE_BEGIN("Get motor state from joint");
     uint motor_state_index = 0;
     for (std::string joint_name : H1_2JointNames)
     {
