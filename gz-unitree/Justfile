@@ -23,8 +23,13 @@ mujoco:
 testmuj:
     just test "h1_low_level_example"
 
+test:
+    #!/usr/bin/env bash
+    just multicast lo
+    cd ../h1v2-Isaac
+    LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/opt/unitree_robotics/lib" uv run --active deploy/sim2real.py
 
-test example="h1_27dof_example":
+testdemo example="h1_27dof_example":
     #!/usr/bin/env bash
     just multicast lo
     cd ../unitree_sdk2
