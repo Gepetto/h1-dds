@@ -1,6 +1,8 @@
 # sdf_path := "../gz_gepetto_humanoids_models/empty_h1_2.sdf"
 sdf_path := "../gz_gepetto_humanoids_models/h1_2/h1_2_with_ground.sdf"
 
+dds_config := "<CycloneDDS><Domain><General><NetworkInterfaceAddress>127.0.0.1</NetworkInterfaceAddress></General></Domain></CycloneDDS>"
+
 install:
     #!/usr/bin/env bash
     cd build
@@ -9,11 +11,8 @@ install:
 
 sim logfile="with_imu_on_model.log":
     echo Dont forget to add plugin filename="gz-unitree" name="gz::unitree::UnitreePlugin" to your SDF file, in the model tag
-    just multicast lo
-    just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v 4 | rg --fixed-strings 'Remotery'
-    # just install && GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v 4 >{{logfile}} 2>&1
-    # uvx --with strip-ansi python -c "from pathlib import Path; from strip_ansi import strip_ansi; Path('{{logfile}}').write_text(strip_ansi(Path('{{logfile}}').read_text()))"
-    # diff -y --width 250 without_imu.log {{logfile}} | code --no-sandbox -
+    # just multicast lo
+    just install && CYCLONEDDS_URI="{{dds_config}}" GZ_SIM_SYSTEM_PLUGIN_PATH=/usr/local/lib/gz-unitree/ gz sim {{sdf_path}} -v 4
 
 mujoco:
     #!/usr/bin/env bash
@@ -25,9 +24,9 @@ testmuj:
 
 test:
     #!/usr/bin/env bash
-    just multicast lo
+    # just multicast lo
     cd ../h1v2-Isaac
-    uv run --active deploy/sim2real.py
+    CYCLONEDDS_URI="{{dds_config}}" uv run --active deploy/sim2real.py
 
 testdemo example="h1_27dof_example":
     #!/usr/bin/env bash
