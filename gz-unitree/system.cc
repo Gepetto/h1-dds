@@ -1,5 +1,6 @@
 #include "include/system.hpp"
 #include <gz/plugin/Register.hh>
+#include <gz/common/Profiler.hh>
 #include <gz/sim/Model.hh>
 #include <gz/sim/Joint.hh>
 #include <gz/sim/Sensor.hh>
@@ -72,6 +73,8 @@ UnitreePlugin::~UnitreePlugin()
 
 void UnitreePlugin::CmdHandler(const void *msg)
 {
+    GZ_PROFILE("Cmd")
+    GZ_PROFILE_THREAD_NAME("unitree__cmd_handler");
     unitree_hg::msg::dds_::LowCmd_ _cmd = *(const unitree_hg::msg::dds_::LowCmd_ *)msg;
 
     MotorCommand motor_command_tmp;
@@ -89,51 +92,8 @@ void UnitreePlugin::CmdHandler(const void *msg)
 
 void UnitreePlugin::IMUHandler(const gz::msgs::IMU &_msg)
 {
-    /*
-
-    header {
-  stamp {
-    sec: 2
-  }
-  data {
-    key: "frame_id"
-    value: "h1_2::torso_link::imu_sensor"
-  }
-  data {
-    key: "seq"
-    value: "2"
-  }
-}
-entity_name: "h1_2::torso_link::imu_sensor"
-orientation {
-  x: 0.038351578720791125
-  y: 0.705539905060143
-  z: -0.038790669484018513
-  w: 0.70656767739426707
-}
-angular_velocity {
-  x: -0.17287533017185
-  y: -0.13795466768844261
-  z: -0.091267442211552072
-}
-linear_acceleration {
-  x: -9.800593283287748
-  y: 0.45835671778499282
-  z: -0.2208827579913305
-}
-
-
-
-====
-
-dds message:
-
-quaternion[4] 	Quaternion of body posture, order: w、x、y、z
-rpy[3] 	Body attitude Euler angle information, order: r、p、y
-gyroscope[3] 	Aircraft attitude three-axis angular velocity information, order: r、p、y
-accelerometer[3] 	Three-axis acceleration information of the aircraft body, order: x、y、z
-
-    */
+    GZ_PROFILE_THREAD_NAME("unitree__imu_handler");
+    GZ_PROFILE("IMU")
     this->imu_state_buffer.Clear();
 
     double w = _msg.orientation().w();
@@ -173,6 +133,8 @@ accelerometer[3] 	Three-axis acceleration information of the aircraft body, orde
 
 void UnitreePlugin::TickHandler(const gz::msgs::Clock &_msg)
 {
+    GZ_PROFILE("Tick")
+    GZ_PROFILE_THREAD_NAME("unitree__tick_handler");
     this->sim_tick = _msg.sim().sec() * 1000 + _msg.sim().nsec() / 1000000;
 }
 
@@ -188,12 +150,14 @@ void UnitreePlugin::PostUpdate(const gz::sim::UpdateInfo &_info,
 void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
                               gz::sim::EntityComponentManager &ecm)
 {
+    GZ_PROFILE("PreUpdate")
     unitree_hg::msg::dds_::LowState_ lowstate{};
     gz::sim::Model model = gz::sim::Model(this->model_id);
 
     uint motor_state_index = 0;
     for (std::string joint_name : H1_2JointNames)
     {
+        GZ_PROFILE("Set motor state for joint")
         gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
         auto position = joint.Position(ecm).value();
         auto velocity = joint.Velocity(ecm);
@@ -226,6 +190,7 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
 
     if (imu)
     {
+        GZ_PROFILE("Set IMU state")
         lowstate.imu_state().quaternion().at(0) = imu->quaternion[0];
         lowstate.imu_state().quaternion().at(1) = imu->quaternion[1];
         lowstate.imu_state().quaternion().at(2) = imu->quaternion[2];
@@ -242,15 +207,23 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
         lowstate.imu_state().temperature() = imu->temperature;
     }
 
-    lowstate.tick() = this->sim_tick;
-    lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
-    this->state_publisher->Write(lowstate);
+    {
+        GZ_PROFILE("Set tick and CRC")
+        lowstate.tick() = this->sim_tick;
+        lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
+    }
+
+    {
+        GZ_PROFILE("Publish low state")
+        this->state_publisher->Write(lowstate);
+    }
 
     auto cmdbuf = this->motor_command_buffer.GetData();
 
     motor_state_index = 0;
     for (std::string joint_name : H1_2JointNames)
     {
+        GZ_PROFILE("Set motor command for joint")
         gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
 
         if (!cmdbuf || cmdbuf->q_target.size() <= motor_state_index)
@@ -275,6 +248,7 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
                               gz::sim::EntityComponentManager &ecm,
                               gz::sim::EventManager &_eventMgr)
 {
+    GZ_PROFILE_THREAD_NAME("unitree__main");
     this->model_id = id;
     ChannelFactory::Instance()->Init(1, "lo");
     // this->ecm = *&ecm;
