@@ -154,11 +154,11 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
     unitree_hg::msg::dds_::LowState_ lowstate{};
     gz::sim::Model model = gz::sim::Model(this->model_id);
 
+    GZ_PROFILE_BEGIN("Set motor state for joint");
     uint motor_state_index = 0;
     for (std::string joint_name : H1_2JointNames)
     {
-        GZ_PROFILE("Set motor state for joint")
-        gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
+        auto joint = this->joints[joint_name];
         auto position = joint.Position(ecm).value();
         auto velocity = joint.Velocity(ecm);
 
@@ -185,6 +185,7 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
 
         motor_state_index++;
     }
+    GZ_PROFILE_END();
 
     auto imu = this->imu_state_buffer.GetData();
 
@@ -220,11 +221,11 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
 
     auto cmdbuf = this->motor_command_buffer.GetData();
 
+    GZ_PROFILE_BEGIN("Set motor command for joint");
     motor_state_index = 0;
     for (std::string joint_name : H1_2JointNames)
     {
-        GZ_PROFILE("Set motor command for joint")
-        gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
+        auto joint = this->joints[joint_name];
 
         if (!cmdbuf || cmdbuf->q_target.size() <= motor_state_index)
         {
@@ -241,6 +242,7 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
 
         motor_state_index++;
     }
+    GZ_PROFILE_END();
 }
 
 void UnitreePlugin::Configure(const gz::sim::Entity &id,
@@ -277,6 +279,7 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
     for (std::string joint_name : H1_2JointNames)
     {
         gz::sim::Joint joint = gz::sim::Joint(model.JointByName(ecm, joint_name));
+        this->joints[joint_name] = joint;
         joint.EnableVelocityCheck(ecm);
         joint.EnablePositionCheck(ecm);
     }

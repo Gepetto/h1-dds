@@ -1,6 +1,7 @@
 #include <gz/sim/System.hh>
 #include "../data.hpp"
 #include <unitree/robot/channel/channel_publisher.hpp>
+#include <gz/sim/Joint.hh>
 #include <gz/msgs/imu.pb.h>
 #include <gz/msgs/clock.pb.h>
 #include <unitree/robot/channel/channel_subscriber.hpp>
@@ -31,6 +32,9 @@ namespace gz_unitree
         DataBuffer<MotorState> motor_state_buffer;
         DataBuffer<MotorCommand> motor_command_buffer;
         DataBuffer<ImuState> imu_state_buffer;
+
+        // Map joints names to gz::sim::Joint entities
+        std::unordered_map<std::string, gz::sim::Joint> joints;
 
         // Tick
         unsigned long sim_tick;
