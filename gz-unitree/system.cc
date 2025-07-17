@@ -270,7 +270,7 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
     this->state_publisher->InitChannel();
 
     this->publisher_thread =
-        CreateRecurrentThreadEx("low_state_writer", UT_CPU_ID_NONE, 1000,
+        CreateRecurrentThreadEx("low_state_writer", UT_CPU_ID_NONE, 500,
                                 &UnitreePlugin::LowStateWriter, this);
 
     gzmsg << header << "Created publisher on channel 'rt/lowstate'" << std::endl;
