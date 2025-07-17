@@ -2,6 +2,7 @@
 #include "../data.hpp"
 #include <unitree/robot/channel/channel_publisher.hpp>
 #include <gz/sim/Joint.hh>
+#include <unitree/idl/hg/LowState_.hpp>
 #include <gz/msgs/imu.pb.h>
 #include <gz/msgs/clock.pb.h>
 #include <unitree/robot/channel/channel_subscriber.hpp>
@@ -33,6 +34,7 @@ namespace gz_unitree
         DataBuffer<MotorCommand> motor_command_buffer;
         DataBuffer<ImuState> imu_state_buffer;
 
+
         // Map joints names to gz::sim::Joint entities
         std::unordered_map<std::string, gz::sim::Joint> joints;
 
@@ -46,6 +48,8 @@ namespace gz_unitree
         // Publisher
         ChannelPublisherPtr<unitree_hg::msg::dds_::LowState_> state_publisher;
         ThreadPtr publisher_thread;
+        DataBuffer<unitree_hg::msg::dds_::LowState_> low_state_buffer;
+        uint32_t last_state_crc;
 
         // Subscriber (to prevent going out of scope)
         ChannelSubscriberPtr<unitree_hg::msg::dds_::LowCmd_> cmd_subscriber;

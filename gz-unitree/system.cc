@@ -140,6 +140,15 @@ void UnitreePlugin::TickHandler(const gz::msgs::Clock &_msg)
 
 void UnitreePlugin::LowStateWriter()
 {
+    // Make sure we run the thread
+    const unitree_hg::msg::dds_::LowState_ *message = this->low_state_buffer.GetData().get();
+    if (message && this->last_state_crc != message->crc())
+    {
+        GZ_PROFILE("Send low state")
+        GZ_PROFILE_THREAD_NAME("unitree__low_state_writer");
+        this->last_state_crc = message->crc();
+        this->state_publisher->Write(*message);
+    }
 }
 
 void UnitreePlugin::PostUpdate(const gz::sim::UpdateInfo &_info,
@@ -215,8 +224,8 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
     }
 
     {
-        GZ_PROFILE("Publish low state")
-        this->state_publisher->Write(lowstate);
+        GZ_PROFILE("Set low state on buffer")
+        this->low_state_buffer.SetData(lowstate);
     }
 
     auto cmdbuf = this->motor_command_buffer.GetData();
@@ -261,7 +270,7 @@ void UnitreePlugin::Configure(const gz::sim::Entity &id,
     this->state_publisher->InitChannel();
 
     this->publisher_thread =
-        CreateRecurrentThreadEx("low_state_writer", UT_CPU_ID_NONE, 2000,
+        CreateRecurrentThreadEx("low_state_writer", UT_CPU_ID_NONE, 1000,
                                 &UnitreePlugin::LowStateWriter, this);
 
     gzmsg << header << "Created publisher on channel 'rt/lowstate'" << std::endl;
