@@ -5,3 +5,12 @@
 [submodule "unitree_mujoco"]
 	path = unitree_mujoco
 	url = https://github.com/unitreerobotics/unitree_mujoco
+[submodule "unitree_ros2"]
+	path = unitree_ros2
+	url = https://github.com/unitreerobotics/unitree_ros2
+[submodule "gz_gepetto_humanoids_models"]
+	path = gz_gepetto_humanoids_models
+	url = git@gitlab.laas.fr:glebihan/gz_gepetto_humanoids_models
+[submodule "h1v2-Isaac"]
+	path = h1v2-Isaac
+	url = https://github.com/gwennlbh/h1v2-Isaac
