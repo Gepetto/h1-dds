@@ -1,4 +1,5 @@
 #include "include/system.hpp"
+#include "include/CRC.hpp"
 #include <gz/plugin/Register.hh>
 #include <gz/common/Profiler.hh>
 #include <gz/sim/Model.hh>
@@ -15,7 +16,6 @@
 #include <cstdlib>
 #include <string.h>
 #include <stdlib.h>
-#include "crc32.cc"
 #include "data.hpp"
 #include "data.cpp"
 
@@ -220,7 +220,11 @@ void UnitreePlugin::PreUpdate(const gz::sim::UpdateInfo &_info,
     {
         GZ_PROFILE("Set tick and CRC")
         lowstate.tick() = this->sim_tick;
-        lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
+        // lowstate.crc() = crc32_core((uint32_t *)&lowstate, (sizeof(unitree_hg::msg::dds_::LowState_) >> 2) - 1);
+        lowstate.crc() = CRC::CalculateBits<uint32_t, 32>(
+            &lowstate,
+            (sizeof(unitree_hg::msg::dds_::LowState_) - sizeof(uint32_t)) * 8,
+            CRC::CRC_32());
     }
 
     {
